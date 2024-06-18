@@ -52,7 +52,7 @@ create table port(
 
 create table leg(
     legID varchar(50) not null,
-    distance int,
+    distance varchar(50),
     arrivalPort varchar(50) not null,
     departurePort varchar(50) not null,
     primary key (legID),
@@ -101,3 +101,16 @@ insert into port (portID, portName, portCity, portState, portCountry) values
     ('STS', 'Port of St. Thomas', 'Charlotte Amalie', 'St. Thomas', 'USVI'),
     ('STM', 'Port of Stockholm', 'Stockholm', 'Stockholm County', 'SWE'),
     ('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'US');
+
+insert into leg (legID, departurePort, arrivalPort, distance) values
+    ('leg_2', 'MIA', 'NSU', '190'),
+    ('leg_1', 'NSU', 'SJN', '792'),
+    ('leg_31', 'LAS', 'SEA', '1139'),
+    ('leg_14', 'SEA', 'VAN', '126'),
+    ('leg_4', 'MIA', 'EGS', '29'),
+    ('leg_47', 'BCA', 'MAR', '185'),
+    ('leg_15', 'MAR', 'CVA', '312'),
+    ('leg_27', 'CVA', 'VEN', '941'),
+    ('leg_33', 'VEN', 'PIR', '855'),
+    ('leg_64', 'STM', 'COP', '427'),
+    ('leg_78', 'COP', 'SHA', '803');
