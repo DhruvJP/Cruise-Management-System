@@ -39,9 +39,31 @@ def split_legs():
     # Spit out the output
     print(',\n'.join(content))
 
+def create_container():
+    content = []
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            break
+        data = line.split('\t')
+        currRoute = data[0]
+        legs = data[1].split(',')
+        for i in range(len(legs)):
+            entry = [currRoute, legs[i].split(':')[0].strip(), str(i)]
+            entry = ['\'' + e + '\'' for e in entry]
+            combined = ', '.join(entry)
+            content.append('(' + combined + ')')
+    
+    print('\n\n\n')
+    # Spit out the output
+    print(',\n'.join(content))
+
 print("After selection, enter or paste your content. Ctrl+D to convert. All data fields must be filled for optimal usage")
-cmd = input('Select a command:\n g - general split\n l - leg split\n')
+cmd = input('Select a command:\n g - general split\n l - leg split\n c - create sequence from leg path\n')
 if cmd == 'g':
     general_split()
 elif cmd == 'l':
     split_legs()
+elif cmd == 'c':
+    create_container()

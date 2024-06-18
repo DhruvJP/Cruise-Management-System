@@ -67,7 +67,7 @@ create table route(
 
 create table contains(
     routeID varchar(50) not null,
-    legSequence int not null,
+    legSequence varchar(50) not null,
     legID varchar(50) not null,
     foreign key (routeID) references route(routeID),
     foreign key (legID) references leg(legID),
@@ -122,3 +122,18 @@ insert into route values
     ('big_mediterranean_loop'),
     ('euro_north'),
     ('euro_south');
+
+insert into contains (routeID, legID, legSequence) values
+    ('americas_one', 'leg_2', '0'),
+    ('americas_one', 'leg_1', '1'),
+    ('americas_three', 'leg_31', '0'),
+    ('americas_three', 'leg_14', '1'),
+    ('americas_two', 'leg_4', '0'),
+    ('big_mediterranean_loop', 'leg_47', '0'),
+    ('big_mediterranean_loop', 'leg_15', '1'),
+    ('big_mediterranean_loop', 'leg_27', '2'),
+    ('big_mediterranean_loop', 'leg_33', '3'),
+    ('euro_north', 'leg_64', '0'),
+    ('euro_north', 'leg_78', '1'),
+    ('euro_south', 'leg_47', '0'),
+    ('euro_south', 'leg_15', '1');
