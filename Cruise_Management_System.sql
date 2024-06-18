@@ -78,3 +78,26 @@ create table contains(
 use cruise_tracking;
 -- TODO - locationID
 insert into port (portID, portName, portCity, portState, portCountry) values
+    ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA'),
+    ('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA'),
+    ('CZL', 'Port of Cozumel', 'Cozumel', 'Quintana Roo', 'MEX'),
+    ('CNL', 'Port Canaveral', 'Cape Canaveral', 'Florida', 'USA'),
+    ('NSU', 'Port of Nassau', 'Nassau', 'New Providence ', 'BHS'),
+    ('BCA', 'Port of Barcelona', 'Barcelona', 'Catalonia', 'ESP'),
+    ('CVA', 'Port of Civitavecchia', 'Civitavecchia', 'Lazio', 'ITA'),
+    ('VEN', 'Port of Venice', 'Venice', 'Veneto', 'ITA'),
+    ('SHA', 'Port of Southampton', 'Southampton', 'NULL', 'GBR'),
+    ('GVN', 'Port of Galveston', 'Galveston', 'Texas', 'USA'),
+    ('SEA', 'Port of Seattle', 'Seattle', 'Washington', 'USA'),
+    ('SJN', 'Port of San Juan', 'San Juan', 'Puerto Rico', 'USA'),
+    ('NOS', 'Port of New Orleans', 'New Orleans', 'Louisiana', 'USA'),
+    ('SYD', 'Port of Sydney', 'Sydney', 'New South Wales', 'AUS'),
+    ('TMP', 'Port of Tampa Bay', 'Tampa Bay', 'Florida', 'USA'),
+    ('VAN', 'Port of Vancouver', 'Vancouver', 'British Columbia', 'CAN'),
+    ('MAR', 'Port of Marseille', 'Marseille', 'Provence-Alpes-Côte d''Azur', 'FRA'),
+    ('COP', 'Port of Copenhagen', 'Copenhagen', 'Hovedstaden', 'DEN'),
+    ('BRI', 'Port of Bridgetown', 'Bridgetown', 'Saint Michael', 'BRB'),
+    ('PIR', 'Port of Piraeus', 'Piraeus', 'Attica', 'GRC'),
+    ('STS', 'Port of St. Thomas', 'Charlotte Amalie', 'St. Thomas', 'USVI'),
+    ('STM', 'Port of Stockholm', 'Stockholm', 'Stockholm County', 'SWE'),
+    ('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'US');
