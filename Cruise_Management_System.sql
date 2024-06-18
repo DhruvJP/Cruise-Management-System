@@ -73,3 +73,8 @@ create table contains(
     foreign key (legID) references leg(legID),
     primary key (routeID, legSequence)
 );
+
+------------------------- Insert Statements for routing group
+use cruise_tracking;
+-- TODO - locationID
+insert into port (portID, portName, portCity, portState, portCountry) values
