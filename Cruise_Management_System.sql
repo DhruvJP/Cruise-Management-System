@@ -114,3 +114,11 @@ insert into leg (legID, departurePort, arrivalPort, distance) values
     ('leg_33', 'VEN', 'PIR', '855'),
     ('leg_64', 'STM', 'COP', '427'),
     ('leg_78', 'COP', 'SHA', '803');
+
+insert into route values
+    ('americas_one'),
+    ('americas_three'),
+    ('americas_two'),
+    ('big_mediterranean_loop'),
+    ('euro_north'),
+    ('euro_south');

@@ -15,7 +15,7 @@ def general_split():
         line = '(' + ', '.join(line) + ')'
         content.append(line)
     print('\n\n\n')
-    # Spit out the output that can be used for strings
+    # Spit out the output
     print(',\n'.join(content))
 
 def split_legs():
@@ -36,7 +36,7 @@ def split_legs():
                 combined = ', '.join(info)
                 content.append('(' + combined + ')')
     print('\n\n\n')
-    # Spit out the output that can be used for strings
+    # Spit out the output
     print(',\n'.join(content))
 
 print("After selection, enter or paste your content. Ctrl+D to convert. All data fields must be filled for optimal usage")
