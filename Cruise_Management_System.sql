@@ -2,7 +2,7 @@
 -- Simple Cruise Management System Course Project Database TEMPLATE (v0)
 -- Team 03
 -- George Dong (gdong37)
--- Team Member Name (GT username)
+-- Maya Mathur (mmathur38)
 -- Team Member Name (GT username)
 -- Team Member Name (GT username)
 -- Team Member Name (GT username)
