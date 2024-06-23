@@ -3,7 +3,7 @@
 -- Team 03
 -- George Dong (gdong37)
 -- Maya Mathur (mmathur38)
--- Team Member Name (GT username)
+-- Dhruv Patel (dpatel700)
 -- Team Member Name (GT username)
 -- Team Member Name (GT username)
 -- Directions:
