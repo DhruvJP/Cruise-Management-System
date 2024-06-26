@@ -41,6 +41,21 @@ data specifications CAN change*/
 
 -- Tables used for the routing of cruises
 -- Includes the entities: route, leg, port
+create table person(
+	personID varchar(50) not null,
+    fname varchar(100),
+    lname varchar(100),
+    primary key (personID)
+);
+
+create table passenger(
+	pID varchar(50),
+    miles varchar(100),
+    funds varchar(100),
+    primary key (pID),
+    foreign key (pID) references person(personID)
+);
+
 create table port(
     portID varchar(50) not null,
     portName varchar(100),
@@ -65,6 +80,11 @@ create table route(
     primary key (routeID)
 );
 
+create table location(
+	locID varchar(50) not null,
+	primary key (locID)
+);
+
 create table contains(
     routeID varchar(50) not null,
     legSequence varchar(50) not null,
@@ -73,6 +93,16 @@ create table contains(
     foreign key (legID) references leg(legID),
     primary key (routeID, legSequence)
 );
+
+
+create table occupies(
+	locID varchar(50) not null,
+    personID varchar(50) not null,
+    foreign key (locID) references location(locID),
+	foreign key (personID) references person(personID),
+    primary key (locID, personID)
+);
+
 
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
@@ -137,3 +167,5 @@ insert into contains (routeID, legID, legSequence) values
     ('euro_north', 'leg_78', '1'),
     ('euro_south', 'leg_47', '0'),
     ('euro_south', 'leg_15', '1');
+
+## Need to insert location data
