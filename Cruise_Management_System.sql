@@ -73,6 +73,23 @@ create table contains(
     foreign key (legID) references leg(legID),
     primary key (routeID, legSequence)
 );
+-- Tables used for the tracking cruiselines and cruises
+-- Includes the entities: cruise, cruiseline
+create table cruiseline(
+    cruiselineID varchar(50) primary key
+);
+
+CREATE TABLE cruise (
+    cruiseID varchar(50) PRIMARY KEY,
+    cruiselineID varchar(50),
+    cost varchar(100),
+    progress VARCHAR(100),
+    next_time DATETIME,
+    cstatus VARCHAR(100),
+    FOREIGN KEY (cruiselineID) REFERENCES cruiseline(cruiselineID)
+);
+
+
 
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
@@ -137,3 +154,43 @@ insert into contains (routeID, legID, legSequence) values
     ('euro_north', 'leg_78', '1'),
     ('euro_south', 'leg_47', '0'),
     ('euro_south', 'leg_15', '1');
+
+------------------------- Insert Statements for cruise group
+
+insert into cruiseline(cruiselineID) values
+	('Royal Caribbean'),
+	('Carnival'),
+	('Norwegian'),
+	('MSC'),
+	('Princess'),
+	('Celebrity'),
+	('Disney'),
+	('Holland America'),
+	('Costa'),
+	('P&O Cruises'),
+	('AIDA'),
+	('Viking Ocean'),
+	('Silversea'),
+	('Regent'),
+	('Oceania'),
+	('Seabourn'),
+	('Cunard'),
+	('Azamara'),
+	('Windstar'),
+	('Hurtigruten'),
+	('Paul Gauguin Cruises'),
+	('Celestyal Cruises'),
+	('Saga Cruises'),
+	('Ponant'),
+	('Star Clippers'),
+	('Marella Cruises');
+    
+insert into cruise(cruiseID, cruiselineID, cost, progress, next_time, cstatus) values
+	('rc_10', 'Royal Caribbean', '200', '1', '1970-01-01 08:00:00', 'sailing'),
+	('cn_38', 'Carnival', '200', '2', '1970-01-01 14:30:00', 'sailing'),
+	('dy_61', 'Disney', '200', '0', '1970-01-01 09:30:00', 'docked'),
+	('nw_20', 'Norwegian', '300','2', '1970-01-01 11:00:00', 'sailing'),
+	('pn_16', 'Ponant', '400','1', '1970-01-01 14:00:00', 'sailing'),
+	('rc_51', 'Royal Caribbean', '100','3', '1970-01-01 11:30:00', 'docked');
+
+ 
