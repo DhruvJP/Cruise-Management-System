@@ -38,21 +38,42 @@ dates - yyyy-mm-dd
 first / lastnames - 100 or fewer characters
 general attributes - 100 or fewer characters (unless specified)
 data specifications CAN change*/
+create table location(
+	locID varchar(50) not null,
+	primary key (locID)
+);
 
 -- Tables used for the routing of cruises
 -- Includes the entities: route, leg, port
+create table person(
+	personID varchar(50) not null,
+    fname varchar(100),
+    lname varchar(100),
+    primary key (personID)
+);
+
+create table passenger(
+	pID varchar(50),
+    miles varchar(100),
+    funds varchar(100),
+    primary key (pID),
+    foreign key (pID) references person(personID)
+);
+
 create table port(
     portID varchar(50) not null,
     portName varchar(100),
     portCity varchar(100),
     portState varchar(100),
     portCountry varchar(100),
-    primary key (portID)
+    location varchar(50) default null,
+    primary key (portID),
+    foreign key (location) references location(locID)
 );
 
 create table leg(
     legID varchar(50) not null,
-    distance varchar(50),
+    distance varchar(100),
     arrivalPort varchar(50) not null,
     departurePort varchar(50) not null,
     primary key (legID),
@@ -67,12 +88,53 @@ create table route(
 
 create table contains(
     routeID varchar(50) not null,
-    legSequence varchar(50) not null,
+    sequence varchar(50) not null,
     legID varchar(50) not null,
     foreign key (routeID) references route(routeID),
     foreign key (legID) references leg(legID),
-    primary key (routeID, legSequence)
+    primary key (routeID, sequence, legID)
 );
+
+
+create table occupies(
+	locID varchar(50) not null,
+    personID varchar(50) not null,
+    foreign key (locID) references location(locID),
+	foreign key (personID) references person(personID),
+    primary key (locID, personID)
+);
+
+create table ship(
+    primary key (shipID),
+    name varchar(50) not null, 
+    speed varchar(50),
+    max_cap int(50),
+    curr_cap int(50),
+    filled boolean(50),
+    next_time varchar(50),
+    status varchar(50),
+    locID varchar(50), 
+    cruiseID varchar(50),
+    cruiselineID varchar(50),
+    foreign key (locID) references Location(locID),
+    foreign key (cruiseID) references Cruise(legID),
+    foreign key (cruiselineID) references Cruiseline(cruiselineID)
+);
+create table river(
+    primary key (riverID),
+    name varchar(50),
+    uses_paddles boolean(50),
+    locID varchar(50),
+    foreign key (locID) references Location(locID),
+);
+create table ocean_liner(
+    primary key (oceanlinerID),
+    name varchar(50),
+    lifeboats varchar(50),
+    locID varchar(50),
+    foreign key (locID) references Location(locID),
+);
+
 -- Tables used for the tracking cruiselines and cruises
 -- Includes the entities: cruise, cruiseline
 create table cruiseline(
@@ -81,58 +143,86 @@ create table cruiseline(
 
 CREATE TABLE cruise (
     cruiseID varchar(50) PRIMARY KEY,
-    cruiselineID varchar(50),
     cost varchar(100),
-    progress VARCHAR(100),
-    next_time DATETIME,
-    cstatus VARCHAR(100),
-    FOREIGN KEY (cruiselineID) REFERENCES ship(cruiselineID),
-    FOREIGN KEY (shipID) REFERENCES ship(shipID)
-
+    routeID varchar(50),
+    FOREIGN KEY (routeID) REFERENCES route(routeID),
 );
-
-
 
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
 -- TODO - locationID
-insert into port (portID, portName, portCity, portState, portCountry) values
-    ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA'),
-    ('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA'),
-    ('CZL', 'Port of Cozumel', 'Cozumel', 'Quintana Roo', 'MEX'),
-    ('CNL', 'Port Canaveral', 'Cape Canaveral', 'Florida', 'USA'),
-    ('NSU', 'Port of Nassau', 'Nassau', 'New Providence ', 'BHS'),
-    ('BCA', 'Port of Barcelona', 'Barcelona', 'Catalonia', 'ESP'),
-    ('CVA', 'Port of Civitavecchia', 'Civitavecchia', 'Lazio', 'ITA'),
-    ('VEN', 'Port of Venice', 'Venice', 'Veneto', 'ITA'),
-    ('SHA', 'Port of Southampton', 'Southampton', 'NULL', 'GBR'),
-    ('GVN', 'Port of Galveston', 'Galveston', 'Texas', 'USA'),
-    ('SEA', 'Port of Seattle', 'Seattle', 'Washington', 'USA'),
-    ('SJN', 'Port of San Juan', 'San Juan', 'Puerto Rico', 'USA'),
-    ('NOS', 'Port of New Orleans', 'New Orleans', 'Louisiana', 'USA'),
-    ('SYD', 'Port of Sydney', 'Sydney', 'New South Wales', 'AUS'),
-    ('TMP', 'Port of Tampa Bay', 'Tampa Bay', 'Florida', 'USA'),
-    ('VAN', 'Port of Vancouver', 'Vancouver', 'British Columbia', 'CAN'),
-    ('MAR', 'Port of Marseille', 'Marseille', 'Provence-Alpes-Côte d''Azur', 'FRA'),
-    ('COP', 'Port of Copenhagen', 'Copenhagen', 'Hovedstaden', 'DEN'),
-    ('BRI', 'Port of Bridgetown', 'Bridgetown', 'Saint Michael', 'BRB'),
-    ('PIR', 'Port of Piraeus', 'Piraeus', 'Attica', 'GRC'),
-    ('STS', 'Port of St. Thomas', 'Charlotte Amalie', 'St. Thomas', 'USVI'),
-    ('STM', 'Port of Stockholm', 'Stockholm', 'Stockholm County', 'SWE'),
-    ('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'US');
+insert into port (portID, portName, portCity, portState, portCountry, location) values
+    ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA', 'port_1'),
+    ('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA', 'port_2'),
+    ('CZL', 'Port of Cozumel', 'Cozumel', 'Quintana Roo', 'MEX', 'port_3'),
+    ('CNL', 'Port Canaveral', 'Cape Canaveral', 'Florida', 'USA', 'port_4'),
+    ('NSU', 'Port of Nassau', 'Nassau', 'New Providence ', 'BHS', NULL),
+    ('BCA', 'Port of Barcelona', 'Barcelona', 'Catalonia', 'ESP', 'port_6'),
+    ('CVA', 'Port of Civitavecchia', 'Civitavecchia', 'Lazio', 'ITA', 'port_7'),
+    ('VEN', 'Port of Venice', 'Venice', 'Veneto', 'ITA', 'port_14'),
+    ('SHA', 'Port of Southampton', 'Southampton', NULL, 'GBR', NULL),
+    ('GVN', 'Port of Galveston', 'Galveston', 'Texas', 'USA', 'port_10'),
+    ('SEA', 'Port of Seattle', 'Seattle', 'Washington', 'USA', 'port_11'),
+    ('SJN', 'Port of San Juan', 'San Juan', 'Puerto Rico', 'USA', 'port_12'),
+    ('NOS', 'Port of New Orleans', 'New Orleans', 'Louisiana', 'USA', 'port_13'),
+    ('SYD', 'Port of Sydney', 'Sydney', 'New South Wales', 'AUS', NULL),
+    ('TMP', 'Port of Tampa Bay', 'Tampa Bay', 'Florida', 'USA', 'port_15'),
+    ('VAN', 'Port of Vancouver', 'Vancouver', 'British Columbia', 'CAN', 'port_16'),
+    ('MAR', 'Port of Marseille', 'Marseille', 'Provence-Alpes-Côte d''Azur', 'FRA', 'port_17'),
+    ('COP', 'Port of Copenhagen', 'Copenhagen', 'Hovedstaden', 'DEN', 'port_18'),
+    ('BRI', 'Port of Bridgetown', 'Bridgetown', 'Saint Michael', 'BRB', NULL),
+    ('PIR', 'Port of Piraeus', 'Piraeus', 'Attica', 'GRC', 'port_20'),
+    ('STS', 'Port of St. Thomas', 'Charlotte Amalie', 'St. Thomas', 'USVI', 'port_21'),
+    ('STM', 'Port of Stockholm', 'Stockholm', 'Stockholm County', 'SWE', 'port_22'),
+    ('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'USA', 'port_2');
+
+insert into location (locID) values
+	('port_1'),
+	('port_2'),
+	('port_3'),
+	('port_10'),
+	('port_17'),
+	('ship_1'),
+	('ship_5'),
+	('ship_8'),
+	('ship_13'),
+	('ship_20'),
+	('port_12'),
+	('port_14'),
+	('port_15'),
+	('port_20'),
+	('port_4'),
+	('port_16'),
+	('port_11'),
+	('port_23'),
+	('port_7'),
+	('port_6'),
+	('port_13'),
+	('port_21'),
+	('port_18'),
+	('port_22'),
+	('ship_6'),
+	('ship_25'),
+	('ship_7'),
+	('ship_21'),
+	('ship_24'),
+	('ship_23'),
+	('ship_18'),
+	('ship_26'),
+	('ship_22');
 
 insert into leg (legID, departurePort, arrivalPort, distance) values
-    ('leg_2', 'MIA', 'NSU', '190'),
-    ('leg_1', 'NSU', 'SJN', '792'),
-    ('leg_31', 'LAS', 'SEA', '1139'),
-    ('leg_14', 'SEA', 'VAN', '126'),
-    ('leg_4', 'MIA', 'EGS', '29'),
-    ('leg_47', 'BCA', 'MAR', '185'),
-    ('leg_15', 'MAR', 'CVA', '312'),
-    ('leg_27', 'CVA', 'VEN', '941'),
-    ('leg_33', 'VEN', 'PIR', '855'),
-    ('leg_64', 'STM', 'COP', '427'),
-    ('leg_78', 'COP', 'SHA', '803');
+    ('leg_2', 'MIA', 'NSU', '190mi'),
+    ('leg_1', 'NSU', 'SJN', '792mi'),
+    ('leg_31', 'LAS', 'SEA', '1139mi'),
+    ('leg_14', 'SEA', 'VAN', '126mi'),
+    ('leg_4', 'MIA', 'EGS', '29mi'),
+    ('leg_47', 'BCA', 'MAR', '185mi'),
+    ('leg_15', 'MAR', 'CVA', '312mi'),
+    ('leg_27', 'CVA', 'VEN', '941mi'),
+    ('leg_33', 'VEN', 'PIR', '855mi'),
+    ('leg_64', 'STM', 'COP', '427mi'),
+    ('leg_78', 'COP', 'SHA', '803mi');
 
 insert into route values
     ('americas_one'),
@@ -142,7 +232,7 @@ insert into route values
     ('euro_north'),
     ('euro_south');
 
-insert into contains (routeID, legID, legSequence) values
+insert into contains (routeID, legID, sequence) values
     ('americas_one', 'leg_2', '0'),
     ('americas_one', 'leg_1', '1'),
     ('americas_three', 'leg_31', '0'),
@@ -156,8 +246,6 @@ insert into contains (routeID, legID, legSequence) values
     ('euro_north', 'leg_78', '1'),
     ('euro_south', 'leg_47', '0'),
     ('euro_south', 'leg_15', '1');
-
-------------------------- Insert Statements for cruise group
 
 insert into cruiseline(cruiselineID) values
 	('Royal Caribbean'),
@@ -194,5 +282,3 @@ insert into cruise(cruiseID, cruiselineID, cost, progress, next_time, cstatus, s
 	('nw_20', 'Norwegian', '300','2', '1970-01-01 11:00:00', 'sailing', 'Norwegian Bliss'),
 	('pn_16', 'Ponant', '400','1', '1970-01-01 14:00:00', 'sailing', 'Le Lyrial'),
 	('rc_51', 'Royal Caribbean', '100','3', '1970-01-01 11:30:00', 'docked', 'Oasis of the Seas');
-
- 
