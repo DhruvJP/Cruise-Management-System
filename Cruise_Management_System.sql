@@ -111,8 +111,6 @@ create table ship(
     max_cap int(50),
     curr_cap int(50),
     filled boolean(50),
-    next_time varchar(50),
-    status varchar(50),
     locID varchar(50), 
     cruiseID varchar(50),
     cruiselineID varchar(50),
@@ -144,8 +142,21 @@ create table cruiseline(
 CREATE TABLE cruise (
     cruiseID varchar(50) PRIMARY KEY,
     cost varchar(100),
-    routeID varchar(50),
+    routeID varchar(50) not null,
     FOREIGN KEY (routeID) REFERENCES route(routeID),
+);
+
+create table support(
+    cruiseID varchar(50),
+    cruiselineID varchar(50),
+    name varchar(50),
+    progress varchar(100),
+    status varchar(100),
+    next_time varchar(100),
+    foreign key cruiseID references cruise(cruiseID),
+    foreign key cruiselineID references ship(cruiselineID),
+    foreign key name references ship(name),
+    primary key (cruiseID, cruiselineID, name)
 );
 
 ------------------------- Insert Statements for routing group
@@ -274,11 +285,3 @@ insert into cruiseline(cruiselineID) values
 	('Ponant'),
 	('Star Clippers'),
 	('Marella Cruises');
-    
-insert into cruise(cruiseID, cruiselineID, cost, progress, next_time, cstatus, shipID) values
-	('rc_10', 'Royal Caribbean', '200', '1', '1970-01-01 08:00:00', 'sailing', 'Symphony of the Seas'),
-	('cn_38', 'Carnival', '200', '2', '1970-01-01 14:30:00', 'sailing', 'Carnival Vista'),
-	('dy_61', 'Disney', '200', '0', '1970-01-01 09:30:00', 'docked', 'Disney Dream'),
-	('nw_20', 'Norwegian', '300','2', '1970-01-01 11:00:00', 'sailing', 'Norwegian Bliss'),
-	('pn_16', 'Ponant', '400','1', '1970-01-01 14:00:00', 'sailing', 'Le Lyrial'),
-	('rc_51', 'Royal Caribbean', '100','3', '1970-01-01 11:30:00', 'docked', 'Oasis of the Seas');
