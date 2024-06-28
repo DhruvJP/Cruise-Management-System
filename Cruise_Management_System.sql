@@ -94,7 +94,31 @@ create table contains(
     primary key (routeID, legSequence)
 );
 
-
+create table ship(
+    primary key (shipID),
+    name varchar(50) not null, 
+    speed varchar(50),
+    max_cap varchar(50),
+    curr_cap varchar(50),
+    filled varchar(50),
+    next_time varchar(50),
+    status varchar(50),
+    foreign key (locID) references Location(locID),
+    foreign key (cruiseID) references Cruise(legID),
+    foreign key (cruiselineID) references Cruiseline(cruiselineID)
+);
+create table river(
+    primary key (riverID),
+    name varchar(50),
+    uses_paddles varchar(50),
+    foreign key (locID) references Location(locID),
+);
+create table ocean_liner(
+    primary key (oceanlinerID),
+    name varchar(50),
+    lifeboats varchar(50),
+    foreign key (locID) references Location(locID),
+);
 create table occupies(
 	locID varchar(50) not null,
     personID varchar(50) not null,
@@ -103,10 +127,7 @@ create table occupies(
     primary key (locID, personID)
 );
 
-
 ------------------------- Insert Statements for routing group
-use cruise_tracking;
-
 insert into location (locID) values
 	('port_1'),
 	('port_2'),
