@@ -1,6 +1,6 @@
 def general_split():
     print('\nGeneral_split')
-    # This will not work for content with empty values (datpoints may appear out of order)
+    # Empty values become empty strings (ie '')
     content = []
     while True:
         try:

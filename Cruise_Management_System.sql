@@ -47,12 +47,14 @@ create table port(
     portCity varchar(100),
     portState varchar(100),
     portCountry varchar(100),
-    primary key (portID)
+    location varchar(50) default null,
+    primary key (portID),
+    foreign key (location) references location(locID)
 );
 
 create table leg(
     legID varchar(50) not null,
-    distance varchar(50),
+    distance varchar(100),
     arrivalPort varchar(50) not null,
     departurePort varchar(50) not null,
     primary key (legID),
@@ -67,53 +69,53 @@ create table route(
 
 create table contains(
     routeID varchar(50) not null,
-    legSequence varchar(50) not null,
+    sequence varchar(50) not null,
     legID varchar(50) not null,
     foreign key (routeID) references route(routeID),
     foreign key (legID) references leg(legID),
-    primary key (routeID, legSequence)
+    primary key (routeID, sequence, legID)
 );
 
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
 -- TODO - locationID
-insert into port (portID, portName, portCity, portState, portCountry) values
-    ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA'),
-    ('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA'),
-    ('CZL', 'Port of Cozumel', 'Cozumel', 'Quintana Roo', 'MEX'),
-    ('CNL', 'Port Canaveral', 'Cape Canaveral', 'Florida', 'USA'),
-    ('NSU', 'Port of Nassau', 'Nassau', 'New Providence ', 'BHS'),
-    ('BCA', 'Port of Barcelona', 'Barcelona', 'Catalonia', 'ESP'),
-    ('CVA', 'Port of Civitavecchia', 'Civitavecchia', 'Lazio', 'ITA'),
-    ('VEN', 'Port of Venice', 'Venice', 'Veneto', 'ITA'),
-    ('SHA', 'Port of Southampton', 'Southampton', 'NULL', 'GBR'),
-    ('GVN', 'Port of Galveston', 'Galveston', 'Texas', 'USA'),
-    ('SEA', 'Port of Seattle', 'Seattle', 'Washington', 'USA'),
-    ('SJN', 'Port of San Juan', 'San Juan', 'Puerto Rico', 'USA'),
-    ('NOS', 'Port of New Orleans', 'New Orleans', 'Louisiana', 'USA'),
-    ('SYD', 'Port of Sydney', 'Sydney', 'New South Wales', 'AUS'),
-    ('TMP', 'Port of Tampa Bay', 'Tampa Bay', 'Florida', 'USA'),
-    ('VAN', 'Port of Vancouver', 'Vancouver', 'British Columbia', 'CAN'),
-    ('MAR', 'Port of Marseille', 'Marseille', 'Provence-Alpes-Côte d''Azur', 'FRA'),
-    ('COP', 'Port of Copenhagen', 'Copenhagen', 'Hovedstaden', 'DEN'),
-    ('BRI', 'Port of Bridgetown', 'Bridgetown', 'Saint Michael', 'BRB'),
-    ('PIR', 'Port of Piraeus', 'Piraeus', 'Attica', 'GRC'),
-    ('STS', 'Port of St. Thomas', 'Charlotte Amalie', 'St. Thomas', 'USVI'),
-    ('STM', 'Port of Stockholm', 'Stockholm', 'Stockholm County', 'SWE'),
-    ('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'US');
+insert into port (portID, portName, portCity, portState, portCountry, location) values
+    ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA', 'port_1'),
+('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA', 'port_2'),
+('CZL', 'Port of Cozumel', 'Cozumel', 'Quintana Roo', 'MEX', 'port_3'),
+('CNL', 'Port Canaveral', 'Cape Canaveral', 'Florida', 'USA', 'port_4'),
+('NSU', 'Port of Nassau', 'Nassau', 'New Providence ', 'BHS', NULL),
+('BCA', 'Port of Barcelona', 'Barcelona', 'Catalonia', 'ESP', 'port_6'),
+('CVA', 'Port of Civitavecchia', 'Civitavecchia', 'Lazio', 'ITA', 'port_7'),
+('VEN', 'Port of Venice', 'Venice', 'Veneto', 'ITA', 'port_14'),
+('SHA', 'Port of Southampton', 'Southampton', NULL, 'GBR', NULL),
+('GVN', 'Port of Galveston', 'Galveston', 'Texas', 'USA', 'port_10'),
+('SEA', 'Port of Seattle', 'Seattle', 'Washington', 'USA', 'port_11'),
+('SJN', 'Port of San Juan', 'San Juan', 'Puerto Rico', 'USA', 'port_12'),
+('NOS', 'Port of New Orleans', 'New Orleans', 'Louisiana', 'USA', 'port_13'),
+('SYD', 'Port of Sydney', 'Sydney', 'New South Wales', 'AUS', NULL),
+('TMP', 'Port of Tampa Bay', 'Tampa Bay', 'Florida', 'USA', 'port_15'),
+('VAN', 'Port of Vancouver', 'Vancouver', 'British Columbia', 'CAN', 'port_16'),
+('MAR', 'Port of Marseille', 'Marseille', 'Provence-Alpes-Côte d''Azur', 'FRA', 'port_17'),
+('COP', 'Port of Copenhagen', 'Copenhagen', 'Hovedstaden', 'DEN', 'port_18'),
+('BRI', 'Port of Bridgetown', 'Bridgetown', 'Saint Michael', 'BRB', NULL),
+('PIR', 'Port of Piraeus', 'Piraeus', 'Attica', 'GRC', 'port_20'),
+('STS', 'Port of St. Thomas', 'Charlotte Amalie', 'St. Thomas', 'USVI', 'port_21'),
+('STM', 'Port of Stockholm', 'Stockholm', 'Stockholm County', 'SWE', 'port_22'),
+('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'USA', 'port_2');
 
 insert into leg (legID, departurePort, arrivalPort, distance) values
-    ('leg_2', 'MIA', 'NSU', '190'),
-    ('leg_1', 'NSU', 'SJN', '792'),
-    ('leg_31', 'LAS', 'SEA', '1139'),
-    ('leg_14', 'SEA', 'VAN', '126'),
-    ('leg_4', 'MIA', 'EGS', '29'),
-    ('leg_47', 'BCA', 'MAR', '185'),
-    ('leg_15', 'MAR', 'CVA', '312'),
-    ('leg_27', 'CVA', 'VEN', '941'),
-    ('leg_33', 'VEN', 'PIR', '855'),
-    ('leg_64', 'STM', 'COP', '427'),
-    ('leg_78', 'COP', 'SHA', '803');
+    ('leg_2', 'MIA', 'NSU', '190mi'),
+    ('leg_1', 'NSU', 'SJN', '792mi'),
+    ('leg_31', 'LAS', 'SEA', '1139mi'),
+    ('leg_14', 'SEA', 'VAN', '126mi'),
+    ('leg_4', 'MIA', 'EGS', '29mi'),
+    ('leg_47', 'BCA', 'MAR', '185mi'),
+    ('leg_15', 'MAR', 'CVA', '312mi'),
+    ('leg_27', 'CVA', 'VEN', '941mi'),
+    ('leg_33', 'VEN', 'PIR', '855mi'),
+    ('leg_64', 'STM', 'COP', '427mi'),
+    ('leg_78', 'COP', 'SHA', '803mi');
 
 insert into route values
     ('americas_one'),
@@ -123,7 +125,7 @@ insert into route values
     ('euro_north'),
     ('euro_south');
 
-insert into contains (routeID, legID, legSequence) values
+insert into contains (routeID, legID, sequence) values
     ('americas_one', 'leg_2', '0'),
     ('americas_one', 'leg_1', '1'),
     ('americas_three', 'leg_31', '0'),
