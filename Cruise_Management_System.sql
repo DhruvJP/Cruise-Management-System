@@ -41,6 +41,21 @@ data specifications CAN change*/
 
 -- Tables used for the routing of cruises
 -- Includes the entities: route, leg, port
+create table person(
+	personID varchar(50) not null,
+    fname varchar(100),
+    lname varchar(100),
+    primary key (personID)
+);
+
+create table passenger(
+	pID varchar(50),
+    miles varchar(100),
+    funds varchar(100),
+    primary key (pID),
+    foreign key (pID) references person(personID)
+);
+
 create table port(
     portID varchar(50) not null,
     portName varchar(100),
@@ -65,6 +80,11 @@ create table route(
     primary key (routeID)
 );
 
+create table location(
+	locID varchar(50) not null,
+	primary key (locID)
+);
+
 create table contains(
     routeID varchar(50) not null,
     legSequence varchar(50) not null,
@@ -73,6 +93,7 @@ create table contains(
     foreign key (legID) references leg(legID),
     primary key (routeID, legSequence)
 );
+
 create table ship(
     primary key (shipID),
     name varchar(50) not null, 
@@ -97,11 +118,51 @@ create table ocean_liner(
     name varchar(50),
     lifeboats varchar(50),
     foreign key (locID) references Location(locID),
-);    
-   
+);
+create table occupies(
+	locID varchar(50) not null,
+    personID varchar(50) not null,
+    foreign key (locID) references location(locID),
+	foreign key (personID) references person(personID),
+    primary key (locID, personID)
+);
+
 ------------------------- Insert Statements for routing group
-use cruise_tracking;
--- TODO - locationID
+insert into location (locID) values
+	('port_1'),
+	('port_2'),
+	('port_3'),
+	('port_10'),
+	('port_17'),
+	('ship_1'),
+	('ship_5'),
+	('ship_8'),
+	('ship_13'),
+	('ship_20'),
+	('port_12'),
+	('port_14'),
+	('port_15'),
+	('port_20'),
+	('port_4'),
+	('port_16'),
+	('port_11'),
+	('port_23'),
+	('port_7'),
+	('port_6'),
+	('port_13'),
+	('port_21'),
+	('port_18'),
+	('port_22'),
+	('ship_6'),
+	('ship_25'),
+	('ship_7'),
+	('ship_21'),
+	('ship_24'),
+	('ship_23'),
+	('ship_18'),
+	('ship_26'),
+	('ship_22');
+
 insert into port (portID, portName, portCity, portState, portCountry) values
     ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA'),
     ('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA'),
