@@ -139,6 +139,7 @@ insert into location (locID) values
     ("ship_24"),
     ("ship_23"),
     ("ship_18"),
+    ("ship_26"),
     ("ship_22");
 
 insert into port (portID, portName, portCity, portState, portCountry) values
