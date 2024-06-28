@@ -104,46 +104,47 @@ create table occupies(
     primary key (locID, personID)
 );
 
-create table ship(
-    primary key (shipID),
-    name varchar(50) not null, 
-    speed varchar(50),
-    max_cap int(50),
-    curr_cap int(50),
-    filled boolean(50),
-    locID varchar(50), 
-    cruiseID varchar(50),
-    cruiselineID varchar(50),
-    foreign key (locID) references Location(locID),
-    foreign key (cruiseID) references Cruise(legID),
-    foreign key (cruiselineID) references Cruiseline(cruiselineID)
-);
-create table river(
-    primary key (riverID),
-    name varchar(50),
-    uses_paddles boolean(50),
-    locID varchar(50),
-    foreign key (locID) references Location(locID),
-);
-create table ocean_liner(
-    primary key (oceanlinerID),
-    name varchar(50),
-    lifeboats varchar(50),
-    locID varchar(50),
-    foreign key (locID) references Location(locID),
-);
-
 -- Tables used for the tracking cruiselines and cruises
 -- Includes the entities: cruise, cruiseline
 create table cruiseline(
     cruiselineID varchar(50) primary key
 );
 
+create table ship(
+    cruiselineID varchar(50) not null,
+    name varchar(50), 
+    speed varchar(50),
+    max_cap int(50),
+    locID varchar(50), 
+    foreign key (locID) references location(locID),
+    foreign key (cruiselineID) references cruiseline(cruiselineID),
+    primary key (cruiselineID, name)
+);
+
+CREATE INDEX index_name ON ship (name);
+
+create table river(
+    cruiselineID varchar(50),
+    name varchar(50), 
+    uses_paddles boolean,
+    foreign key (cruiselineID) references ship(cruiselineID),
+    foreign key (name) references ship(name),
+    primary key (cruiselineID, name)
+);
+create table ocean_liner(
+    cruiselineID varchar(50) not null,
+    name varchar(50) not null, 
+    lifeboats varchar(50),
+    foreign key (cruiselineID) references ship(cruiselineID),
+    foreign key (name) references ship(name),
+    primary key (cruiselineID, name)
+);
+
 CREATE TABLE cruise (
     cruiseID varchar(50) PRIMARY KEY,
     cost varchar(100),
     routeID varchar(50) not null,
-    FOREIGN KEY (routeID) REFERENCES route(routeID),
+    FOREIGN KEY (routeID) REFERENCES route(routeID)
 );
 
 create table support(
@@ -153,9 +154,9 @@ create table support(
     progress varchar(100),
     status varchar(100),
     next_time varchar(100),
-    foreign key cruiseID references cruise(cruiseID),
-    foreign key cruiselineID references ship(cruiselineID),
-    foreign key name references ship(name),
+    foreign key (cruiseID) references cruise(cruiseID),
+    foreign key (cruiselineID) references ship(cruiselineID),
+    foreign key (name) references ship(name),
     primary key (cruiseID, cruiselineID, name)
 );
 
