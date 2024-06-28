@@ -3,7 +3,7 @@
 -- Team 03
 -- George Dong (gdong37)
 -- Maya Mathur (mmathur38)
--- Team Member Name (GT username)
+-- Dhruv Patel (dpatel700)
 -- Team Member Name (GT username)
 -- Team Member Name (GT username)
 -- Directions:
@@ -41,6 +41,21 @@ data specifications CAN change*/
 
 -- Tables used for the routing of cruises
 -- Includes the entities: route, leg, port
+create table person(
+	personID varchar(50) not null,
+    fname varchar(100),
+    lname varchar(100),
+    primary key (personID)
+);
+
+create table passenger(
+	pID varchar(50),
+    miles varchar(100),
+    funds varchar(100),
+    primary key (pID),
+    foreign key (pID) references person(personID)
+);
+
 create table port(
     portID varchar(50) not null,
     portName varchar(100),
@@ -67,6 +82,11 @@ create table route(
     primary key (routeID)
 );
 
+create table location(
+	locID varchar(50) not null,
+	primary key (locID)
+);
+
 create table contains(
     routeID varchar(50) not null,
     sequence varchar(50) not null,
@@ -76,7 +96,41 @@ create table contains(
     primary key (routeID, sequence, legID)
 );
 
+create table ship(
+    primary key (shipID),
+    name varchar(50) not null, 
+    speed varchar(50),
+    max_cap varchar(50),
+    curr_cap varchar(50),
+    filled varchar(50),
+    next_time varchar(50),
+    status varchar(50),
+    foreign key (locID) references Location(locID),
+    foreign key (cruiseID) references Cruise(legID),
+    foreign key (cruiselineID) references Cruiseline(cruiselineID)
+);
+create table river(
+    primary key (riverID),
+    name varchar(50),
+    uses_paddles varchar(50),
+    foreign key (locID) references Location(locID),
+);
+create table ocean_liner(
+    primary key (oceanlinerID),
+    name varchar(50),
+    lifeboats varchar(50),
+    foreign key (locID) references Location(locID),
+);
+create table occupies(
+	locID varchar(50) not null,
+    personID varchar(50) not null,
+    foreign key (locID) references location(locID),
+	foreign key (personID) references person(personID),
+    primary key (locID, personID)
+);
+
 ------------------------- Insert Statements for routing group
+
 use cruise_tracking;
 -- TODO - locationID
 insert into port (portID, portName, portCity, portState, portCountry, location) values
@@ -103,6 +157,41 @@ insert into port (portID, portName, portCity, portState, portCountry, location) 
 ('STS', 'Port of St. Thomas', 'Charlotte Amalie', 'St. Thomas', 'USVI', 'port_21'),
 ('STM', 'Port of Stockholm', 'Stockholm', 'Stockholm County', 'SWE', 'port_22'),
 ('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'USA', 'port_2');
+
+insert into location (locID) values
+	('port_1'),
+	('port_2'),
+	('port_3'),
+	('port_10'),
+	('port_17'),
+	('ship_1'),
+	('ship_5'),
+	('ship_8'),
+	('ship_13'),
+	('ship_20'),
+	('port_12'),
+	('port_14'),
+	('port_15'),
+	('port_20'),
+	('port_4'),
+	('port_16'),
+	('port_11'),
+	('port_23'),
+	('port_7'),
+	('port_6'),
+	('port_13'),
+	('port_21'),
+	('port_18'),
+	('port_22'),
+	('ship_6'),
+	('ship_25'),
+	('ship_7'),
+	('ship_21'),
+	('ship_24'),
+	('ship_23'),
+	('ship_18'),
+	('ship_26'),
+	('ship_22');
 
 insert into leg (legID, departurePort, arrivalPort, distance) values
     ('leg_2', 'MIA', 'NSU', '190mi'),
