@@ -86,7 +86,9 @@ CREATE TABLE cruise (
     progress VARCHAR(100),
     next_time DATETIME,
     cstatus VARCHAR(100),
-    FOREIGN KEY (cruiselineID) REFERENCES cruiseline(cruiselineID)
+    FOREIGN KEY (cruiselineID) REFERENCES ship(cruiselineID),
+    FOREIGN KEY (shipID) REFERENCES ship(shipID)
+
 );
 
 
@@ -185,12 +187,12 @@ insert into cruiseline(cruiselineID) values
 	('Star Clippers'),
 	('Marella Cruises');
     
-insert into cruise(cruiseID, cruiselineID, cost, progress, next_time, cstatus) values
-	('rc_10', 'Royal Caribbean', '200', '1', '1970-01-01 08:00:00', 'sailing'),
-	('cn_38', 'Carnival', '200', '2', '1970-01-01 14:30:00', 'sailing'),
-	('dy_61', 'Disney', '200', '0', '1970-01-01 09:30:00', 'docked'),
-	('nw_20', 'Norwegian', '300','2', '1970-01-01 11:00:00', 'sailing'),
-	('pn_16', 'Ponant', '400','1', '1970-01-01 14:00:00', 'sailing'),
-	('rc_51', 'Royal Caribbean', '100','3', '1970-01-01 11:30:00', 'docked');
+insert into cruise(cruiseID, cruiselineID, cost, progress, next_time, cstatus, shipID) values
+	('rc_10', 'Royal Caribbean', '200', '1', '1970-01-01 08:00:00', 'sailing', 'Symphony of the Seas'),
+	('cn_38', 'Carnival', '200', '2', '1970-01-01 14:30:00', 'sailing', 'Carnival Vista'),
+	('dy_61', 'Disney', '200', '0', '1970-01-01 09:30:00', 'docked', 'Disney Dream'),
+	('nw_20', 'Norwegian', '300','2', '1970-01-01 11:00:00', 'sailing', 'Norwegian Bliss'),
+	('pn_16', 'Ponant', '400','1', '1970-01-01 14:00:00', 'sailing', 'Le Lyrial'),
+	('rc_51', 'Royal Caribbean', '100','3', '1970-01-01 11:30:00', 'docked', 'Oasis of the Seas');
 
  
