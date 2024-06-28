@@ -106,7 +106,41 @@ create table occupies(
 
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
--- TODO - locationID
+
+insert into location (locID) values
+    ("port_1"),
+    ("port_2"),
+    ("port_3"),
+    ("port_10"),
+    ("port_17"),
+    ("ship_1"),
+    ("ship_5"),
+    ("ship_8"),
+    ("ship_13"),
+    ("ship_20"),
+    ("port_12"),
+    ("port_14"),
+    ("port_15"),
+    ("port_20"),
+    ("port_4"),
+    ("port_16"),
+    ("port_11"),
+    ("port_23"),
+    ("port_7"),
+    ("port_6"),
+    ("port_13"),
+    ("port_21"),
+    ("port_18"),
+    ("port_22"),
+    ("ship_6"),
+    ("ship_25"),
+    ("ship_7"),
+    ("ship_21"),
+    ("ship_24"),
+    ("ship_23"),
+    ("ship_18"),
+    ("ship_22");
+
 insert into port (portID, portName, portCity, portState, portCountry) values
     ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA'),
     ('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA'),
@@ -167,5 +201,3 @@ insert into contains (routeID, legID, legSequence) values
     ('euro_north', 'leg_78', '1'),
     ('euro_south', 'leg_47', '0'),
     ('euro_south', 'leg_15', '1');
-
-## Need to insert location data
