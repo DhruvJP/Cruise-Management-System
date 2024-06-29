@@ -53,35 +53,11 @@ create table person(
 );
 
 create table passenger(
-	pID varchar(50),
+	personID varchar(50),
     miles varchar(100),
     funds varchar(100),
-    primary key (pID),
-    foreign key (pID) references person(personID)
-);
-
-create booked(
-    cruiseID varchar(50) not null,
-    personID varchar(50) not null,
-    primary key (cruiseID, personID),
-    foreign key (cruiseID) references cruise(cruiseID),
-    foreign key (personID) references passenger(personID)
-);
-
-create table crew(
-    personID varchar(50) not null,
-    taxID varchar(50) not null,
-    experience varchar(50) not null '0',
-    cruiseID varchar(50),
     primary key (personID),
-    foreign key (cruiseID) references cruise(cruiseID)
-);
-
-create table crew_license(
-    personID varchar(50) not null,
-    license varchar(50) not null,
-    primary key (personID, license),
-    foreign key (personID) references crew(personID)
+    foreign key (personID) references person(personID)
 );
 
 create table port(
@@ -110,11 +86,6 @@ create table route(
     primary key (routeID)
 );
 
-create table location(
-	locID varchar(50) not null,
-	primary key (locID)
-);
-
 create table contains(
     routeID varchar(50) not null,
     sequence varchar(50) not null,
@@ -123,7 +94,6 @@ create table contains(
     foreign key (legID) references leg(legID),
     primary key (routeID, sequence, legID)
 );
-
 
 create table occupies(
 	locID varchar(50) not null,
@@ -189,44 +159,28 @@ create table support(
     primary key (cruiseID, cruiselineID, name)
 );
 
-
-create table occupies(
-	locID varchar(50) not null,
+create table booked(
+    cruiseID varchar(50) not null,
     personID varchar(50) not null,
-    foreign key (locID) references location(locID),
-	foreign key (personID) references person(personID),
-    primary key (locID, personID)
+    primary key (cruiseID, personID),
+    foreign key (cruiseID) references cruise(cruiseID),
+    foreign key (personID) references passenger(personID)
 );
 
-create table ship(
-    primary key (shipID),
-    name varchar(50) not null, 
-    speed varchar(50),
-    max_cap int(50),
-    curr_cap int(50),
-    filled boolean,
-    next_time varchar(50),
-    status varchar(50),
-    locID varchar(50), 
+create table crew(
+    personID varchar(50) not null,
+    taxID varchar(50) not null,
+    experience varchar(50) not null default '0',
     cruiseID varchar(50),
-    cruiselineID varchar(50),
-    foreign key (locID) references Location(locID),
-    foreign key (cruiseID) references Cruise(legID),
-    foreign key (cruiselineID) references Cruiseline(cruiselineID)
+    primary key (personID),
+    foreign key (cruiseID) references cruise(cruiseID)
 );
-create table river(
-    primary key (riverID),
-    name varchar(50),
-    uses_paddles boolean,
-    locID varchar(50),
-    foreign key (locID) references Location(locID),
-);
-create table ocean_liner(
-    primary key (oceanlinerID),
-    name varchar(50),
-    lifeboats varchar(50),
-    locID varchar(50),
-    foreign key (locID) references Location(locID),
+
+create table crew_license(
+    personID varchar(50) not null,
+    license varchar(50) not null,
+    primary key (personID, license),
+    foreign key (personID) references crew(personID)
 );
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
@@ -277,59 +231,7 @@ insert into person (personID, fname, lname) values
     ('p8', 'Bennie', 'Palmer'),
     ('p9', 'Marlene', 'Warner');
 
-insert into crew (personID, taxID, experience, cruiseID) values
-    ('p1', '330-12-6907', '31', 'rc_10'),
-    ('p10', '769-60-1266', '15', 'nw_20'),
-    ('p11', '369-22-9505', '22', 'pn_16'),
-    ('p12', '680-92-5329', '24', NULL),
-    ('p13', '513-40-4168', '24', 'pn_16'),
-    ('p14', '454-71-7847', '13', 'pn_16'),
-    ('p15', '153-47-8101', '30', NULL),
-    ('p16', '598-47-5172', '28', 'rc_51'),
-    ('p17', '865-71-6800', '36', 'rc_51'),
-    ('p18', '250-86-2784', '23', 'rc_51'),
-    ('p19', '386-39-7881', '2', NULL),
-    ('p2', '842-88-1257', '9', 'rc_10'),
-    ('p20', '522-44-3098', '28', NULL),
-    ('p3', '750-24-7616', '11', 'cn_38'),
-    ('p4', '776-21-8098', '24', 'cn_38'),
-    ('p5', '933-93-2165', '27', 'dy_61'),
-    ('p6', '707-84-4555', '38', 'dy_61'),
-    ('p7', '450-25-5617', '13', 'nw_20'),
-    ('p8', '701-38-2179', '12', NULL),
-    ('p9', '936-44-6941', '13', 'nw_20');
-
-insert into crew_license (personID, license) values
-    ('p1', 'ocean_liner'),
-    ('p10', 'ocean_liner'),
-    ('p11', 'ocean_liner'),
-    ('p11', ' river'),
-    ('p12', 'river'),
-    ('p13', 'river'),
-    ('p14', 'ocean_liner'),
-    ('p14', ' river'),
-    ('p15', 'ocean_liner'),
-    ('p15', ' river'),
-    ('p16', 'ocean_liner'),
-    ('p17', 'ocean_liner'),
-    ('p17', ' river'),
-    ('p18', 'ocean_liner'),
-    ('p19', 'ocean_liner'),
-    ('p2', 'ocean_liner'),
-    ('p2', ' river'),
-    ('p20', 'ocean_liner'),
-    ('p3', 'ocean_liner'),
-    ('p4', 'ocean_liner'),
-    ('p4', ' river'),
-    ('p5', 'ocean_liner'),
-    ('p6', 'ocean_liner'),
-    ('p6', ' river'),
-    ('p7', 'ocean_liner'),
-    ('p8', 'river'),
-    ('p9', 'ocean_liner'),
-    ('p9', ' river');
-
-insert into passenger (pID, miles, funds) values
+insert into passenger (personID, miles, funds) values
     ('p21', '771', '700'),
     ('p22', '374', '200'),
     ('p23', '414', '400'),
@@ -553,3 +455,55 @@ insert into support (cruiseID, cruiselineID, name, progress, status, next_time) 
     ('nw_20', 'Norwegian', 'Norwegian Bliss', '2', 'sailing', '11:00:00'),
     ('pn_16', 'Ponant', 'Le Lyrial', '1', 'sailing', '14:00:00'),
     ('rc_51', 'Royal Caribbean', 'Oasis of the Seas', '3', 'docked', '11:30:00');
+    
+insert into crew (personID, taxID, experience, cruiseID) values
+    ('p1', '330-12-6907', '31', 'rc_10'),
+    ('p10', '769-60-1266', '15', 'nw_20'),
+    ('p11', '369-22-9505', '22', 'pn_16'),
+    ('p12', '680-92-5329', '24', NULL),
+    ('p13', '513-40-4168', '24', 'pn_16'),
+    ('p14', '454-71-7847', '13', 'pn_16'),
+    ('p15', '153-47-8101', '30', NULL),
+    ('p16', '598-47-5172', '28', 'rc_51'),
+    ('p17', '865-71-6800', '36', 'rc_51'),
+    ('p18', '250-86-2784', '23', 'rc_51'),
+    ('p19', '386-39-7881', '2', NULL),
+    ('p2', '842-88-1257', '9', 'rc_10'),
+    ('p20', '522-44-3098', '28', NULL),
+    ('p3', '750-24-7616', '11', 'cn_38'),
+    ('p4', '776-21-8098', '24', 'cn_38'),
+    ('p5', '933-93-2165', '27', 'dy_61'),
+    ('p6', '707-84-4555', '38', 'dy_61'),
+    ('p7', '450-25-5617', '13', 'nw_20'),
+    ('p8', '701-38-2179', '12', NULL),
+    ('p9', '936-44-6941', '13', 'nw_20');
+
+insert into crew_license (personID, license) values
+    ('p1', 'ocean_liner'),
+    ('p10', 'ocean_liner'),
+    ('p11', 'ocean_liner'),
+    ('p11', ' river'),
+    ('p12', 'river'),
+    ('p13', 'river'),
+    ('p14', 'ocean_liner'),
+    ('p14', ' river'),
+    ('p15', 'ocean_liner'),
+    ('p15', ' river'),
+    ('p16', 'ocean_liner'),
+    ('p17', 'ocean_liner'),
+    ('p17', ' river'),
+    ('p18', 'ocean_liner'),
+    ('p19', 'ocean_liner'),
+    ('p2', 'ocean_liner'),
+    ('p2', ' river'),
+    ('p20', 'ocean_liner'),
+    ('p3', 'ocean_liner'),
+    ('p4', 'ocean_liner'),
+    ('p4', ' river'),
+    ('p5', 'ocean_liner'),
+    ('p6', 'ocean_liner'),
+    ('p6', ' river'),
+    ('p7', 'ocean_liner'),
+    ('p8', 'river'),
+    ('p9', 'ocean_liner'),
+    ('p9', ' river');
