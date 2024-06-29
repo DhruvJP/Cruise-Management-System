@@ -4,8 +4,8 @@
 -- George Dong (gdong37)
 -- Maya Mathur (mmathur38)
 -- Dhruv Patel (dpatel700)
--- Team Member Name (GT username)
--- Team Member Name (GT username)
+-- Jones Murphy III (jmurphy61)
+-- Gabriel Amezquita Medina (gmedina32)
 -- Directions:
 -- Please follow all instructions for Phase II as listed on Canvas.
 -- Fill in the team number and names and GT usernames for all members above.
@@ -58,6 +58,30 @@ create table passenger(
     funds varchar(100),
     primary key (pID),
     foreign key (pID) references person(personID)
+);
+
+create booked(
+    cruiseID varchar(50) not null,
+    personID varchar(50) not null,
+    primary key (cruiseID, personID),
+    foreign key (cruiseID) references cruise(cruiseID),
+    foreign key (personID) references passenger(personID)
+);
+
+create table crew(
+    personID varchar(50) not null,
+    taxID varchar(50) not null,
+    experience varchar(50) not null '0',
+    cruiseID varchar(50),
+    primary key (personID),
+    foreign key (cruiseID) references cruise(cruiseID)
+);
+
+create table crew_license(
+    personID varchar(50) not null,
+    license varchar(50) not null,
+    primary key (personID, license),
+    foreign key (personID) references crew(personID)
 );
 
 create table port(
@@ -180,7 +204,7 @@ create table ship(
     speed varchar(50),
     max_cap int(50),
     curr_cap int(50),
-    filled boolean(50),
+    filled boolean,
     next_time varchar(50),
     status varchar(50),
     locID varchar(50), 
@@ -193,7 +217,7 @@ create table ship(
 create table river(
     primary key (riverID),
     name varchar(50),
-    uses_paddles boolean(50),
+    uses_paddles boolean,
     locID varchar(50),
     foreign key (locID) references Location(locID),
 );
@@ -206,6 +230,131 @@ create table ocean_liner(
 );
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
+insert into person (personID, fname, lname) values
+    ('p1', 'Jeanne', 'Nelson'),
+    ('p10', 'Lawrence', 'Morgan'),
+    ('p11', 'Sandra', 'Cruz'),
+    ('p12', 'Dan', 'Ball'),
+    ('p13', 'Bryant', 'Figueroa'),
+    ('p14', 'Dana', 'Perry'),
+    ('p15', 'Matt', 'Hunt'),
+    ('p16', 'Edna', 'Brown'),
+    ('p17', 'Ruby', 'Burgess'),
+    ('p18', 'Esther', 'Pittman'),
+    ('p19', 'Doug', 'Fowler'),
+    ('p2', 'Roxanne', 'Byrd'),
+    ('p20', 'Thomas', 'Olson'),
+    ('p21', 'Mona', 'Harrison'),
+    ('p22', 'Arlene', 'Massey'),
+    ('p23', 'Judith', 'Patrick'),
+    ('p24', 'Reginald', 'Rhodes'),
+    ('p25', 'Vincent', 'Garcia'),
+    ('p26', 'Cheryl', 'Moore'),
+    ('p27', 'Michael', 'Rivera'),
+    ('p28', 'Luther', 'Matthews'),
+    ('p29', 'Moses', 'Parks'),
+    ('p3', 'Tanya', 'Nguyen'),
+    ('p30', 'Ora', 'Steele'),
+    ('p31', 'Antonio', 'Flores'),
+    ('p32', 'Glenn', 'Ross'),
+    ('p33', 'Irma', 'Thomas'),
+    ('p34', 'Ann', 'Maldonado'),
+    ('p35', 'Jeffrey', 'Cruz'),
+    ('p36', 'Sonya', 'Price'),
+    ('p37', 'Tracy', 'Hale'),
+    ('p38', 'Albert', 'Simmons'),
+    ('p39', 'Karen', 'Terry'),
+    ('p4', 'Kendra', 'Jacobs'),
+    ('p40', 'Glen', 'Kelley'),
+    ('p41', 'Brooke', 'Little'),
+    ('p42', 'Daryl', 'Nguyen'),
+    ('p43', 'Judy', 'Willis'),
+    ('p44', 'Marco', 'Klein'),
+    ('p45', 'Angelica', 'Hampton'),
+    ('p5', 'Jeff', 'Burton'),
+    ('p6', 'Randal', 'Parks'),
+    ('p7', 'Sonya', 'Owens'),
+    ('p8', 'Bennie', 'Palmer'),
+    ('p9', 'Marlene', 'Warner');
+
+insert into crew (personID, taxID, experience, cruiseID) values
+    ('p1', '330-12-6907', '31', 'rc_10'),
+    ('p10', '769-60-1266', '15', 'nw_20'),
+    ('p11', '369-22-9505', '22', 'pn_16'),
+    ('p12', '680-92-5329', '24', NULL),
+    ('p13', '513-40-4168', '24', 'pn_16'),
+    ('p14', '454-71-7847', '13', 'pn_16'),
+    ('p15', '153-47-8101', '30', NULL),
+    ('p16', '598-47-5172', '28', 'rc_51'),
+    ('p17', '865-71-6800', '36', 'rc_51'),
+    ('p18', '250-86-2784', '23', 'rc_51'),
+    ('p19', '386-39-7881', '2', NULL),
+    ('p2', '842-88-1257', '9', 'rc_10'),
+    ('p20', '522-44-3098', '28', NULL),
+    ('p3', '750-24-7616', '11', 'cn_38'),
+    ('p4', '776-21-8098', '24', 'cn_38'),
+    ('p5', '933-93-2165', '27', 'dy_61'),
+    ('p6', '707-84-4555', '38', 'dy_61'),
+    ('p7', '450-25-5617', '13', 'nw_20'),
+    ('p8', '701-38-2179', '12', NULL),
+    ('p9', '936-44-6941', '13', 'nw_20');
+
+insert into crew_license (personID, license) values
+    ('p1', 'ocean_liner'),
+    ('p10', 'ocean_liner'),
+    ('p11', 'ocean_liner'),
+    ('p11', ' river'),
+    ('p12', 'river'),
+    ('p13', 'river'),
+    ('p14', 'ocean_liner'),
+    ('p14', ' river'),
+    ('p15', 'ocean_liner'),
+    ('p15', ' river'),
+    ('p16', 'ocean_liner'),
+    ('p17', 'ocean_liner'),
+    ('p17', ' river'),
+    ('p18', 'ocean_liner'),
+    ('p19', 'ocean_liner'),
+    ('p2', 'ocean_liner'),
+    ('p2', ' river'),
+    ('p20', 'ocean_liner'),
+    ('p3', 'ocean_liner'),
+    ('p4', 'ocean_liner'),
+    ('p4', ' river'),
+    ('p5', 'ocean_liner'),
+    ('p6', 'ocean_liner'),
+    ('p6', ' river'),
+    ('p7', 'ocean_liner'),
+    ('p8', 'river'),
+    ('p9', 'ocean_liner'),
+    ('p9', ' river');
+
+insert into passenger (pID, miles, funds) values
+    ('p21', '771', '700'),
+    ('p22', '374', '200'),
+    ('p23', '414', '400'),
+    ('p24', '292', '500'),
+    ('p25', '390', '300'),
+    ('p26', '302', '600'),
+    ('p27', '470', '400'),
+    ('p28', '208', '400'),
+    ('p29', '292', '700'),
+    ('p30', '686', '500'),
+    ('p31', '547', '400'),
+    ('p32', '257', '500'),
+    ('p33', '564', '600'),
+    ('p34', '211', '200'),
+    ('p35', '233', '500'),
+    ('p36', '293', '400'),
+    ('p37', '552', '700'),
+    ('p38', '812', '700'),
+    ('p39', '541', '400'),
+    ('p40', '441', '700'),
+    ('p41', '875', '300'),
+    ('p42', '691', '500'),
+    ('p43', '572', '300'),
+    ('p44', '572', '500'),
+    ('p45', '663', '500');
 
 insert into location (locID) values
 	('port_1'),
