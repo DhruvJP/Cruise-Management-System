@@ -113,8 +113,8 @@ create table cruiseline(
 create table ship(
     cruiselineID varchar(50) not null,
     name varchar(50), 
-    speed varchar(50),
-    max_cap int(50),
+    speed varchar(100),
+    max_cap int(100),
     locID varchar(50), 
     foreign key (locID) references location(locID),
     foreign key (cruiselineID) references cruiseline(cruiselineID),
@@ -134,7 +134,7 @@ create table river(
 create table ocean_liner(
     cruiselineID varchar(50) not null,
     name varchar(50) not null, 
-    lifeboats varchar(50),
+    lifeboats varchar(100),
     foreign key (cruiselineID) references ship(cruiselineID),
     foreign key (name) references ship(name),
     primary key (cruiselineID, name)
@@ -142,7 +142,7 @@ create table ocean_liner(
 
 CREATE TABLE cruise (
     cruiseID varchar(50) PRIMARY KEY,
-    cost varchar(100),
+    cost int(100),
     routeID varchar(50) not null,
     FOREIGN KEY (routeID) REFERENCES route(routeID)
 );
@@ -196,7 +196,7 @@ insert into location (locID) values
 	('ship_18'),
 	('ship_26'),
 	('ship_22');
-    
+
 insert into port (portID, portName, portCity, portState, portCountry, location) values
     ('MIA', 'Port of Miami', 'Miami', 'Florida', 'USA', 'port_1'),
     ('EGS', 'Port Everglades', 'Fort Lauderdale', 'Florida', 'USA', 'port_2'),
@@ -285,3 +285,77 @@ insert into cruiseline(cruiselineID) values
 	('Ponant'),
 	('Star Clippers'),
 	('Marella Cruises');
+
+insert into ship (cruiselineID, name, max_cap, speed, locID) values
+    ('Royal Caribbean', 'Symphony of the Seas', '6680', '22', 'ship_1'),
+    ('Carnival', 'Carnival Vista', '3934', '23', 'ship_23'),
+    ('Norwegian', 'Norwegian Bliss', '4004', '22.5', 'ship_24'),
+    ('MSC', 'Meraviglia', '4488', '22.7', 'ship_22'),
+    ('Princess', 'Crown Princess', '3080', '23', 'ship_5'),
+    ('Celebrity', 'Celebrity Edge', '2908', '22', 'ship_6'),
+    ('Disney', 'Disney Dream', '4000', '23.5', 'ship_7'),
+    ('Holland America', 'MS Nieuw Statendam', '2666', '23', 'ship_8'),
+    ('Costa', 'Costa Smeralda', '6554', '23', null),
+    ('P&O Cruises', 'Iona', '5200', '22.6', null),
+    ('AIDA', 'AIDAnova', '6600', '21.5', null),
+    ('Viking Ocean', 'Viking Orion', '930', '20', null),
+    ('Silversea', 'Silver Muse', '596', '19.8', 'ship_13'),
+    ('Regent', 'Seven Seas Explorer', '750', '19.5', null),
+    ('Oceania', 'Marina', '1250', '20', null),
+    ('Seabourn', 'Seabourn Ovation', '604', '19', null),
+    ('Cunard', 'Queen Mary 2', '2691', '30', null),
+    ('Azamara', 'Azamara Quest', '686', '18.5', 'ship_18'),
+    ('Royal Caribbean', 'Oasis of the Seas', '1325', '18', 'ship_25'),
+    ('Windstar', 'Wind Surf', '342', '15', 'ship_20'),
+    ('Hurtigruten', 'MS Roald Amundsen', '530', '15.5', 'ship_21'),
+    ('Paul Gauguin Cruises', 'Paul Gauguin', '332', '18', null),
+    ('Celestyal Cruises', 'Celestyal Crystal', '1200', '18.5', null),
+    ('Saga Cruises', 'Spirit of Discovery', '999', '21', null),
+    ('Ponant', 'Le Lyrial', '264', '16', 'ship_26'),
+    ('Star Clippers', 'Royal Clipper', '227', '17', null),
+    ('Marella Cruises', 'Marella Explorer', '1924', '21.5', null);
+
+insert into ocean_liner (cruiselineID, name, lifeboats) values
+    ('Royal Caribbean', 'Symphony of the Seas', '20'),
+    ('Carnival', 'Carnival Vista', '20'),
+    ('Norwegian', 'Norwegian Bliss', '15'),
+    ('MSC', 'Meraviglia', '20'),
+    ('Princess', 'Crown Princess', '20'),
+    ('Celebrity', 'Celebrity Edge', '20'),
+    ('Disney', 'Disney Dream', '20'),
+    ('Holland America', 'MS Nieuw Statendam', '30'),
+    ('P&O Cruises', 'Iona', '20'),
+    ('AIDA', 'AIDAnova', '35'),
+    ('Viking Ocean', 'Viking Orion', '20'),
+    ('Silversea', 'Silver Muse', '30'),
+    ('Regent', 'Seven Seas Explorer', '20'),
+    ('Oceania', 'Marina', '25'),
+    ('Seabourn', 'Seabourn Ovation', '20'),
+    ('Cunard', 'Queen Mary 2', '40'),
+    ('Royal Caribbean', 'Oasis of the Seas', '30'),
+    ('Saga Cruises', 'Spirit of Discovery', '2'),
+    ('Marella Cruises', 'Marella Explorer', '2');
+
+insert into river (cruiselineID, name, uses_paddles) values
+    ('Azamara', 'Azamara Quest', TRUE),
+    ('Windstar', 'Wind Surf', FALSE),
+    ('Hurtigruten', 'MS Roald Amundsen', TRUE),
+    ('Celestyal Cruises', 'Celestyal Crystal', FALSE),
+    ('Ponant', 'Le Lyrial', TRUE),
+    ('Star Clippers', 'Royal Clipper', TRUE);
+
+insert into cruise (cruiseID, routeID, cost) values
+    ('rc_10', 'americas_one', 200),
+    ('cn_38', 'americas_three', 200),
+    ('dy_61', 'americas_two', 200),
+    ('nw_20', 'euro_north', 300),
+    ('pn_16', 'euro_south', 400),
+    ('rc_51', 'big_mediterranean_loop', 100);
+
+insert into support (cruiseID, cruiselineID, name, progress, status, next_time) values
+    ('rc_10', 'Royal Caribbean', 'Symphony of the Seas', '1', 'sailing', '08:00:00'),
+    ('cn_38', 'Carnival', 'Carnival Vista', '2', 'sailing', '14:30:00'),
+    ('dy_61', 'Disney', 'Disney Dream', '0', 'docked', '09:30:00'),
+    ('nw_20', 'Norwegian', 'Norwegian Bliss', '2', 'sailing', '11:00:00'),
+    ('pn_16', 'Ponant', 'Le Lyrial', '1', 'sailing', '14:00:00'),
+    ('rc_51', 'Royal Caribbean', 'Oasis of the Seas', '3', 'docked', '11:30:00');
