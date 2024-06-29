@@ -111,7 +111,7 @@ create table cruiseline(
 
 create table ship(
     cruiselineID varchar(50) not null,
-    name varchar(50), 
+    name varchar(50) not null, 
     speed varchar(100),
     max_cap int(100),
     locID varchar(50), 
@@ -133,7 +133,7 @@ create table river(
 create table ocean_liner(
     cruiselineID varchar(50) not null,
     name varchar(50) not null, 
-    lifeboats varchar(100),
+    lifeboats integer,
     foreign key (cruiselineID) references ship(cruiselineID),
     foreign key (name) references ship(name),
     primary key (cruiselineID, name)
@@ -150,7 +150,7 @@ create table support(
     cruiseID varchar(50),
     cruiselineID varchar(50),
     name varchar(50),
-    progress varchar(100),
+    progress integer,
     status varchar(100),
     next_time varchar(100),
     foreign key (cruiseID) references cruise(cruiseID),
@@ -170,9 +170,10 @@ create table booked(
 create table crew(
     personID varchar(50) not null,
     taxID varchar(50) not null,
-    experience varchar(50) not null default '0',
+    experience integer not null default 0,
     cruiseID varchar(50),
     primary key (personID),
+    foreign key (personID) references person(personID),
     foreign key (cruiseID) references cruise(cruiseID)
 );
 
@@ -514,3 +515,29 @@ insert into booked (cruiseID, personID) values
     ( 'rc_10', 'p25'),
     ( 'pn_16', 'p37'),
     ( 'pn_16', 'p38');
+
+insert into occupies (locID, personID) values 
+    ('ship_1', 'p1'),
+    ('ship_24', 'p10'),
+    ('ship_26', 'p13'),
+    ('ship_26', 'p14'),
+    ('ship_25', 'p16'),
+    ('port_14', 'p16'),
+    ('ship_25', 'p17'),
+    ('port_14', 'p17'),
+    ('ship_25', 'p18'),
+    ('port_14', 'p18'),
+    ('ship_1', 'p2'),
+    ('ship_24', 'p21'),
+    ('ship_1', 'p23'),
+    ('ship_1', 'p25'),
+    ('ship_23', 'p3'),
+    ('ship_26', 'p37'),
+    ('ship_26', 'p38'),
+    ('ship_23', 'p4'),
+    ('ship_7', 'p5'),
+    ('port_1', 'p5'),
+    ('ship_7', 'p6'),
+    ('port_1', 'p6'),
+    ('ship_24', 'p7'),
+    ('ship_24', 'p9');
