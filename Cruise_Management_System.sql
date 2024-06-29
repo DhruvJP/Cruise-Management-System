@@ -54,8 +54,8 @@ create table person(
 
 create table passenger(
 	personID varchar(50),
-    miles varchar(100),
-    funds varchar(100),
+    miles integer,
+    funds integer,
     primary key (personID),
     foreign key (personID) references person(personID)
 );
@@ -73,7 +73,7 @@ create table port(
 
 create table leg(
     legID varchar(50) not null,
-    distance varchar(100),
+    distance integer,
     arrivalPort varchar(50) not null,
     departurePort varchar(50) not null,
     primary key (legID),
@@ -320,17 +320,17 @@ insert into port (portID, portName, portCity, portState, portCountry, location) 
     ('LAS', 'Port of Los Angeles', 'Los Angeles', 'California', 'USA', 'port_2');
 
 insert into leg (legID, departurePort, arrivalPort, distance) values
-    ('leg_2', 'MIA', 'NSU', '190mi'),
-    ('leg_1', 'NSU', 'SJN', '792mi'),
-    ('leg_31', 'LAS', 'SEA', '1139mi'),
-    ('leg_14', 'SEA', 'VAN', '126mi'),
-    ('leg_4', 'MIA', 'EGS', '29mi'),
-    ('leg_47', 'BCA', 'MAR', '185mi'),
-    ('leg_15', 'MAR', 'CVA', '312mi'),
-    ('leg_27', 'CVA', 'VEN', '941mi'),
-    ('leg_33', 'VEN', 'PIR', '855mi'),
-    ('leg_64', 'STM', 'COP', '427mi'),
-    ('leg_78', 'COP', 'SHA', '803mi');
+    ('leg_2', 'MIA', 'NSU', '190'),
+    ('leg_1', 'NSU', 'SJN', '792'),
+    ('leg_31', 'LAS', 'SEA', '1139'),
+    ('leg_14', 'SEA', 'VAN', '126'),
+    ('leg_4', 'MIA', 'EGS', '29'),
+    ('leg_47', 'BCA', 'MAR', '185'),
+    ('leg_15', 'MAR', 'CVA', '312'),
+    ('leg_27', 'CVA', 'VEN', '941'),
+    ('leg_33', 'VEN', 'PIR', '855'),
+    ('leg_64', 'STM', 'COP', '427'),
+    ('leg_78', 'COP', 'SHA', '80');
 
 insert into route values
     ('americas_one'),
