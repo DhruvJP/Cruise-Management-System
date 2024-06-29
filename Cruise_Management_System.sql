@@ -507,3 +507,10 @@ insert into crew_license (personID, license) values
     ('p8', 'river'),
     ('p9', 'ocean_liner'),
     ('p9', ' river');
+
+insert into booked (cruiseID, personID) values
+    ( 'nw_20', 'p21'),
+    ( 'rc_10', 'p23'),
+    ( 'rc_10', 'p25'),
+    ( 'pn_16', 'p37'),
+    ( 'pn_16', 'p38');
