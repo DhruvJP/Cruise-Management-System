@@ -86,6 +86,11 @@ create table route(
     primary key (routeID)
 );
 
+create table location(
+	locID varchar(50) not null,
+	primary key (locID)
+);
+
 create table contains(
     routeID varchar(50) not null,
     sequence varchar(50) not null,
@@ -160,8 +165,48 @@ create table support(
     primary key (cruiseID, cruiselineID, name)
 );
 
+
+create table occupies(
+	locID varchar(50) not null,
+    personID varchar(50) not null,
+    foreign key (locID) references location(locID),
+	foreign key (personID) references person(personID),
+    primary key (locID, personID)
+);
+
+create table ship(
+    primary key (shipID),
+    name varchar(50) not null, 
+    speed varchar(50),
+    max_cap int(50),
+    curr_cap int(50),
+    filled boolean(50),
+    next_time varchar(50),
+    status varchar(50),
+    locID varchar(50), 
+    cruiseID varchar(50),
+    cruiselineID varchar(50),
+    foreign key (locID) references Location(locID),
+    foreign key (cruiseID) references Cruise(legID),
+    foreign key (cruiselineID) references Cruiseline(cruiselineID)
+);
+create table river(
+    primary key (riverID),
+    name varchar(50),
+    uses_paddles boolean(50),
+    locID varchar(50),
+    foreign key (locID) references Location(locID),
+);
+create table ocean_liner(
+    primary key (oceanlinerID),
+    name varchar(50),
+    lifeboats varchar(50),
+    locID varchar(50),
+    foreign key (locID) references Location(locID),
+);
 ------------------------- Insert Statements for routing group
 use cruise_tracking;
+
 insert into location (locID) values
 	('port_1'),
 	('port_2'),
