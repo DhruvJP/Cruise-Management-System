@@ -52,7 +52,19 @@ create procedure add_ship (in ip_cruiselineID varchar(50), in ip_ship_name varch
 	in ip_max_capacity integer, in ip_speed integer, in ip_locationID varchar(50),
     in ip_ship_type varchar(100), in ip_uses_paddles boolean, in ip_lifeboats integer)
 sp_main: begin
+    -- Check to see if the ship can move and house people as well as having a unique locationID
+    if ip_max_capacity > 0 and ip_speed > 0 and ip_locationID not in (select locationID from location) then
+        -- Check for present cruiselineID and a unique ship name to the cruiseline
+        if ip_cruiselineID in (select cruiselineID from cruiseline)
+            and ip_ship_name not in (select ship_name from ship where cruiselineID = ip_cruiselineID) then
 
+            -- Add location as a possible referential key
+            insert into location (locationID) values (ip_locationID);
+            -- Insert new ship values
+            insert into ship (cruiselineID, ship_name, max_capacity, speed, locationID, ship_type, uses_paddles, lifeboats)
+                values (ip_cruiselineID, ip_ship_name, ip_max_capacity, ip_speed, ip_locationID, ip_ship_type, ip_uses_paddles, ip_lifeboats);
+        end if;
+    end if;
 end //
 delimiter ;
 
