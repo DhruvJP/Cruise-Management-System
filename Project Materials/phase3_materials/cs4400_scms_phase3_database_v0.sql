@@ -154,7 +154,7 @@ insert into ship_port values ('NOS', 'Port of New Orleans', 'New Orleans', 'Loui
 insert into ship_port values ('SYD', 'Port of Sydney', 'Sydney', 'New South Wales', 'AUS', null);
 insert into ship_port values ('TMP', 'Port of Tampa Bay', 'Tampa Bay', 'Florida', 'USA', 'port_15');
 insert into ship_port values ('VAN', 'Port of Vancouver', 'Vancouver', 'British Columbia', 'CAN', 'port_16');
-insert into ship_port values ('MAR', 'Port of Marseille', 'Marseille', 'Provence-Alpes-Côte d\'Azur', 'FRA', 'port_17');
+insert into ship_port values ('MAR', 'Port of Marseille', 'Marseille', 'Provence-Alpes-Côte d''Azur', 'FRA', 'port_17');
 insert into ship_port values ('COP', 'Port of Copenhagen', 'Copenhagen', 'Hovedstaden', 'DEN', 'port_18');
 insert into ship_port values ('BRI', 'Port of Bridgetown', 'Bridgetown', 'Saint Michael', 'BRB', null);
 insert into ship_port values ('PIR', 'Port of Piraeus', 'Piraeus', 'Attica', 'GRC', 'port_20');

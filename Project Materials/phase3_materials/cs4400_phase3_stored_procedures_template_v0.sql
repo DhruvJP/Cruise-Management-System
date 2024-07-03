@@ -170,7 +170,25 @@ create procedure offer_cruise (in ip_cruiseID varchar(50), in ip_routeID varchar
     in ip_support_cruiseline varchar(50), in ip_support_ship_name varchar(50), in ip_progress integer,
     in ip_next_time time, in ip_cost integer)
 sp_main: begin
-
+    declare curr_progress integer;
+    -- Check for valid route
+    if ip_routeID in (select routID from route) then
+        -- Check to see if assigned ship is not in use
+        if ip_support_ship_name not in (select support_ship_name from cruise) or ip_support_ship_name is null then
+            -- Update cruiseline table if new cruiselineID is used
+            if ip_support_cruiseline not in (select cruiselineID from cruiseline) then
+                insert into cruisline (cruiselineID) values (ip_cruiselineID);
+            end if;
+            -- Ensure we have a valid progress point
+            if curr_progress not in (select sequence from route_path where routeID = ip_routeID) then
+                curr_progress = 0;
+            else
+                curr_progress = ip_progress;
+            end if;
+            insert into cruise (cruiseID, routeID, support_cruiseline, support_ship_name, progress, ship_status, next_time, cost)
+                 values (ip_cruiseID, ip_routeID, ip_support_cruiseline, ip_support_ship_name, curr_progress, 'docked', ip_next_time, ip_cost);
+        end if;
+    end if;
 end //
 delimiter ;
 
