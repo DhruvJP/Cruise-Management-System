@@ -334,13 +334,20 @@ sp_main: begin
 end //
 delimiter ;
 
+-- ------------------------------------------------------------------------------------------------ Views
+
 -- [14] cruises_at_sea()
 -- -----------------------------------------------------------------------------
 /* This view describes where cruises that are currently sailing are located. */
 -- -----------------------------------------------------------------------------
 create or replace view cruises_at_sea (departing_from, arriving_at, num_cruises,
 	cruise_list, earliest_arrival, latest_arrival, ship_list) as
-select '_', '_', '_', '_', '_', '_', '_';
+select departure as 'departing_from', arrival as 'arriving_at', count(*) as 'num_cruises', min(next_time) as 'earliest_arrival', max(next_time) as 'latest_arrival', group_concat(locationID separator ', ') as 'ship_list'
+    from cruise inner join route_path on progress = sequence and cruise.routeID = route_path.routeID
+        natural join leg
+        inner join ship on support_ship_name = ship_name
+    where ship_status = 'sailing'
+    group by legID;
 
 -- [15] cruises_docked()
 -- -----------------------------------------------------------------------------
