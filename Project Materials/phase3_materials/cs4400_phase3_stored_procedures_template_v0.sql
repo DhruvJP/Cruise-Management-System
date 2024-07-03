@@ -80,7 +80,15 @@ delimiter //
 create procedure add_port (in ip_portID char(3), in ip_port_name varchar(200),
     in ip_city varchar(100), in ip_state varchar(100), in ip_country char(3), in ip_locationID varchar(50))
 sp_main: begin
-
+    -- Check that portID and locationID are unique (locationID can be null)
+    if ip_portID not in (select portID from ship_port) and (ip_locationID not in (select locationID from location) or ip_locationID is null) then
+        -- Add locationID if one is provided
+        if ip_locationID is not null then
+            insert into location (locationID) values (ip_locationID);
+        end if;
+        -- Create new entry
+        insert into ship_port (portID, port_name, city, state, country, locationID) values (ip_portID, ip_port_name, ip_city, ip_state, ip_country, ip_locationID);
+    end if;
 end //
 delimiter ;
 
