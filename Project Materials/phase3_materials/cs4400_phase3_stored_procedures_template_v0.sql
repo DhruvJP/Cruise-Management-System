@@ -110,7 +110,26 @@ create procedure add_person (in ip_personID varchar(50), in ip_first_name varcha
     in ip_last_name varchar(100), in ip_locationID varchar(50), in ip_taxID varchar(50),
     in ip_experience integer, in ip_miles integer, in ip_funds integer)
 sp_main: begin
+    -- Check that the person has a unique identifier and that their location is valid
+    -- Also ensures they have a first name
+    if ip_personID not in (select personID from person)
+        and ip_locationID in (select locationID from location) and ip_first_name is not null then
 
+        insert into person (personID, first_name, last_name) values (ip_personID, ip_first_name, ip_last_name);
+        -- Different inserts depending on if they are a passenger or crew
+        -- Only crew will / must have non null taxID
+        if ip_taxID is null then
+            -- Passenger
+            insert into passenger (personID, miles, funds) values (ip_personID, ip_miles, ip_funds);
+        else
+            -- Crew (taxID must be unique)
+            -- assigned_to will default to null
+            if ip_taxID not in (select taxID from crew) then
+                insert into crew (personID, taxID, experience) values (ip_personID, ip_taxID, ip_experience);
+            end if;
+            insert into 
+        end if;
+    end if;
 end //
 delimiter ;
 
