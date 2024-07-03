@@ -142,7 +142,16 @@ drop procedure if exists grant_or_revoke_crew_license;
 delimiter //
 create procedure grant_or_revoke_crew_license (in ip_personID varchar(50), in ip_license varchar(100))
 sp_main: begin
-
+    -- This person must be a crew member to perform operations for them
+    if ip_personID in (select personID from crew) then
+        -- Check to see if they have the license
+        if ip_license in (select ip_license from licenses where personID = ip_personID) then
+            -- There are no references to the license, so it's safe to delete
+            delete from licenses where personID = ip_personID and license = ip_license;
+        else
+            insert into licenses (personID, license) values (ip_personID, ip_license);
+        end if;
+    end if;
 end //
 delimiter ;
 
