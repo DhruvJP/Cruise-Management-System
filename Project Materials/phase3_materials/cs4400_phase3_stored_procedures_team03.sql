@@ -115,19 +115,19 @@ sp_main: begin
     if ip_personID not in (select personID from person)
         and ip_locationID in (select locationID from location) and ip_first_name is not null then
 
-        insert into person (personID, first_name, last_name) values (ip_personID, ip_first_name, ip_last_name);
         -- Different inserts depending on if they are a passenger or crew
         -- Only crew will / must have non null taxID
         if ip_taxID is null then
             -- Passenger
+            insert into person (personID, first_name, last_name) values (ip_personID, ip_first_name, ip_last_name);
             insert into passenger (personID, miles, funds) values (ip_personID, ip_miles, ip_funds);
         else
             -- Crew (taxID must be unique)
             -- assigned_to will default to null
             if ip_taxID not in (select taxID from crew) then
+                insert into person (personID, first_name, last_name) values (ip_personID, ip_first_name, ip_last_name);
                 insert into crew (personID, taxID, experience) values (ip_personID, ip_taxID, ip_experience);
             end if;
-            insert into 
         end if;
     end if;
 end //
@@ -145,7 +145,7 @@ sp_main: begin
     -- This person must be a crew member to perform operations for them
     if ip_personID in (select personID from crew) then
         -- Check to see if they have the license
-        if ip_license in (select ip_license from licenses where personID = ip_personID) then
+        if ip_license in (select license from licenses where personID = ip_personID) then
             -- There are no references to the license, so it's safe to delete
             delete from licenses where personID = ip_personID and license = ip_license;
         else
@@ -170,9 +170,8 @@ create procedure offer_cruise (in ip_cruiseID varchar(50), in ip_routeID varchar
     in ip_support_cruiseline varchar(50), in ip_support_ship_name varchar(50), in ip_progress integer,
     in ip_next_time time, in ip_cost integer)
 sp_main: begin
-    declare curr_progress integer;
     -- Check for valid route
-    if ip_routeID in (select routID from route) then
+    if ip_routeID in (select routeID from route) and ip_cruiseID not in (select cruiseID from cruise) then
         -- Check to see if assigned ship is not in use
         if ip_support_ship_name not in (select support_ship_name from cruise) or ip_support_ship_name is null then
             -- Update cruiseline table if new cruiselineID is used
@@ -180,13 +179,11 @@ sp_main: begin
                 insert into cruisline (cruiselineID) values (ip_cruiselineID);
             end if;
             -- Ensure we have a valid progress point
-            if curr_progress not in (select sequence from route_path where routeID = ip_routeID) then
-                curr_progress = 0;
-            else
-                curr_progress = ip_progress;
+            -- progress should be between 0 and max(sequence) - 1
+            if ip_progress between 0 and ((select max(sequence) from route_path where routeID = ip_routeID) - 1) then
+                insert into cruise (cruiseID, routeID, support_cruiseline, support_ship_name, progress, ship_status, next_time, cost)
+                    values (ip_cruiseID, ip_routeID, ip_support_cruiseline, ip_support_ship_name, ip_progress, 'docked', ip_next_time, ip_cost);
             end if;
-            insert into cruise (cruiseID, routeID, support_cruiseline, support_ship_name, progress, ship_status, next_time, cost)
-                 values (ip_cruiseID, ip_routeID, ip_support_cruiseline, ip_support_ship_name, curr_progress, 'docked', ip_next_time, ip_cost);
         end if;
     end if;
 end //
