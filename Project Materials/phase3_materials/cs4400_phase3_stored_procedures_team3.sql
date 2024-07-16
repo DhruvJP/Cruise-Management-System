@@ -121,12 +121,14 @@ sp_main: begin
             -- Passenger
             insert into person (personID, first_name, last_name) values (ip_personID, ip_first_name, ip_last_name);
             insert into passenger (personID, miles, funds) values (ip_personID, ip_miles, ip_funds);
+            insert into person_occupies (personID, locationID) values (ip_personID, ip_locationID);
         else
             -- Crew (taxID must be unique)
             -- assigned_to will default to null
             if ip_taxID not in (select taxID from crew) then
                 insert into person (personID, first_name, last_name) values (ip_personID, ip_first_name, ip_last_name);
                 insert into crew (personID, taxID, experience) values (ip_personID, ip_taxID, ip_experience);
+                insert into person_occupies (personID, locationID) values (ip_personID, ip_locationID);
             end if;
         end if;
     end if;
