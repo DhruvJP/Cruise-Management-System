@@ -52,7 +52,6 @@ create procedure add_ship (in ip_cruiselineID varchar(50), in ip_ship_name varch
 	in ip_max_capacity integer, in ip_speed integer, in ip_locationID varchar(50),
     in ip_ship_type varchar(100), in ip_uses_paddles boolean, in ip_lifeboats integer)
 sp_main: begin
-
     -- Check to see if the ship can move and house people as well as having a unique locationID
     if ip_max_capacity > 0 and ip_speed > 0 and ip_locationID not in (select locationID from location) then
         -- Check for present cruiselineID and a unique ship name to the cruiseline
@@ -66,7 +65,6 @@ sp_main: begin
                 values (ip_cruiselineID, ip_ship_name, ip_max_capacity, ip_speed, ip_locationID, ip_ship_type, ip_uses_paddles, ip_lifeboats);
         end if;
     end if;
-
 end //
 delimiter ;
 
@@ -82,7 +80,6 @@ delimiter //
 create procedure add_port (in ip_portID char(3), in ip_port_name varchar(200),
     in ip_city varchar(100), in ip_state varchar(100), in ip_country char(3), in ip_locationID varchar(50))
 sp_main: begin
-
     -- Check that portID and locationID are unique (locationID can be null)
     if ip_portID not in (select portID from ship_port) and (ip_locationID not in (select locationID from location) or ip_locationID is null) then
         -- Add locationID if one is provided
@@ -92,7 +89,6 @@ sp_main: begin
         -- Create new entry
         insert into ship_port (portID, port_name, city, state, country, locationID) values (ip_portID, ip_port_name, ip_city, ip_state, ip_country, ip_locationID);
     end if;
-
 end //
 delimiter ;
 
@@ -114,7 +110,6 @@ create procedure add_person (in ip_personID varchar(50), in ip_first_name varcha
     in ip_last_name varchar(100), in ip_locationID varchar(50), in ip_taxID varchar(50),
     in ip_experience integer, in ip_miles integer, in ip_funds integer)
 sp_main: begin
-
     -- Check that the person has a unique identifier and that their location is valid
     -- Also ensures they have a first name
     if ip_personID not in (select personID from person)
@@ -137,7 +132,6 @@ sp_main: begin
             end if;
         end if;
     end if;
-
 end //
 delimiter ;
 
@@ -150,7 +144,6 @@ drop procedure if exists grant_or_revoke_crew_license;
 delimiter //
 create procedure grant_or_revoke_crew_license (in ip_personID varchar(50), in ip_license varchar(100))
 sp_main: begin
-
     -- This person must be a crew member to perform operations for them
     if ip_personID in (select personID from crew) then
         -- Check to see if they have the license
@@ -161,7 +154,6 @@ sp_main: begin
             insert into licenses (personID, license) values (ip_personID, ip_license);
         end if;
     end if;
-
 end //
 delimiter ;
 
@@ -180,7 +172,6 @@ create procedure offer_cruise (in ip_cruiseID varchar(50), in ip_routeID varchar
     in ip_support_cruiseline varchar(50), in ip_support_ship_name varchar(50), in ip_progress integer,
     in ip_next_time time, in ip_cost integer)
 sp_main: begin
-
     -- Check for valid route
     if ip_routeID in (select routeID from route) and ip_cruiseID not in (select cruiseID from cruise) then
         -- Check to see if assigned ship is not in use
@@ -197,7 +188,6 @@ sp_main: begin
             end if;
         end if;
     end if;
-
 end //
 delimiter ;
 
@@ -315,7 +305,37 @@ sp_main: begin
 end //
 delimiter ;
 
--- [13] cruises_at_sea()
+-- [13] simulation_cycle()
+-- -----------------------------------------------------------------------------
+/* This stored procedure executes the next step in the simulation cycle.  The cruise
+with the smallest next time in chronological order must be identified and selected.
+If multiple cruises have the same time, then cruises that are arriving should be
+preferred over cruises that are departing.  Similarly, cruises with the lowest
+identifier in alphabetical order should also be preferred.
+
+If a cruise is sailing and waiting to dock, then the cruise should be allowed
+to dock, passengers allowed to disembark, and the time advanced by one hour until
+the next departure.
+
+If a cruise is docked and waiting to sail, then the passengers should
+be allowed to board, and the time should be advanced to represent when the cruise
+will arrive at its next location based on the leg distance and ship speed.
+
+If an cruise is docked and has reached the end of its route, then the passengers 
+should be allowed to disembark, the crew should be recycled to allow rest, 
+and the cruise itself should be retired from the system. */
+-- -----------------------------------------------------------------------------
+drop procedure if exists simulation_cycle;
+delimiter //
+create procedure simulation_cycle ()
+sp_main: begin
+
+end //
+delimiter ;
+
+-- ------------------------------------------------------------------------------------------------ Views
+
+-- [14] cruises_at_sea()
 -- -----------------------------------------------------------------------------
 /* This view describes where cruises that are currently sailing are located. */
 -- -----------------------------------------------------------------------------
@@ -331,12 +351,12 @@ select departure as 'departing_from', arrival as 'arriving_at', count(*) as 'num
     where ship_status = 'sailing'
     group by legID;
 
--- [14] cruises_docked()
+-- [15] cruises_docked()
 -- -----------------------------------------------------------------------------
 /* This view describes where cruises that are currently docked are located. */
 -- -----------------------------------------------------------------------------
 create or replace view cruises_docked (departing_from, num_cruises,
-	cruise_list, earliest_departure, latest_departure, ship_list) as 
+	cruise_list, earliest_arrival, latest_arrival, ship_list) as 
 select departure as 'departing_from', count(*) as 'num_cruises',
     group_concat(cruiseID separator ', ') as 'cruise_list', min(next_time) as 'earliest_arrival',
     max(next_time) as 'latest_arrival', group_concat(locationID separator ', ') as 'ship_list'
@@ -348,7 +368,7 @@ select departure as 'departing_from', count(*) as 'num_cruises',
         where ship_status = 'docked'
     group by departure;
 
--- [15] people_at_sea()
+-- [16] people_at_sea()
 -- -----------------------------------------------------------------------------
 /* This view describes where people who are currently at sea are located. */
 -- -----------------------------------------------------------------------------
@@ -357,7 +377,7 @@ create or replace view people_at_sea (departing_from, arriving_at, num_ships,
 	num_passengers, num_people, person_list) as
 select '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_';
 
--- [16] people_docked()
+-- [17] people_docked()
 -- -----------------------------------------------------------------------------
 /* This view describes where people who are currently docked are located. */
 -- -----------------------------------------------------------------------------
@@ -365,7 +385,7 @@ create or replace view people_docked (departing_from, ship_port, port_name,
 	city, state, country, num_crew, num_passengers, num_people, person_list) as
 select '_', '_', '_', '_', '_', '_', '_', '_', '_', '_';
 
--- [17] route_summary()
+-- [18] route_summary()
 -- -----------------------------------------------------------------------------
 /* This view describes how the routes are being utilized by different cruises. */
 -- -----------------------------------------------------------------------------
@@ -373,10 +393,10 @@ create or replace view route_summary (route, num_legs, leg_sequence, route_lengt
 	num_cruises, cruise_list, port_sequence) as
 select '_', '_', '_', '_', '_', '_', '_';
 
--- [18] alternative_ports()
+-- [19] alternative_ports()
 -- -----------------------------------------------------------------------------
 /* This view displays ports that share the same country. */
 -- -----------------------------------------------------------------------------
-create or replace view alternative_ports (country, num_ports,
+create or replace view alternative_ports (city, state, country, num_ports,
 	port_code_list, port_name_list) as
-select '_', '_', '_', '_';
+select '_', '_', '_', '_', '_', '_';
