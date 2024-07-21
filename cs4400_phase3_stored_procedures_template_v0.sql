@@ -377,11 +377,11 @@ create or replace view people_docked (departing_from, ship_port, port_name,
 with max_sequences as (select max(sequence) as last_sequence, legID 
 						from route_path group by legID),
 crew_count as (
-		select count(cr.personID) as num_crew, cruiseID, group_concat(personID) as id_list from 
+		select count(cr.personID) as num_crew, cruiseID from 
 		crew cr join cruise c on cr.assigned_to = c.cruiseID 
 		group by c.cruiseID),
 pass_count as (
-		select count(pass.personID) as num_p, c.cruiseID, group_concat(personID) as id_list from 
+		select count(pass.personID) as num_p, c.cruiseID from 
 		passenger_books pass join cruise c on pass.cruiseID = c.cruiseID 
 		group by c.cruiseID)
 select departure as departing_from,
@@ -393,7 +393,7 @@ sp.country,
 min(num_crew) as num_crew,
 min(num_p) as num_passengers,
 min(num_p) + min(num_crew) as num_people,
-group_concat(distinct cc.id_list, pc.id_list) as person_list
+group_concat(distinct person.personID order by cast(substring(person.personid, 2) as unsigned) separator ',') as person_list
 from
 cruise c join ship s on c.support_ship_name = s.ship_name and c.support_cruiseline = s.cruiselineID
     join route_path r on c.routeID = r.routeID
@@ -403,6 +403,9 @@ cruise c join ship s on c.support_ship_name = s.ship_name and c.support_cruiseli
     join max_sequences ms on l.legID = ms.legID
     join crew_count cc on cc.cruiseID = c.cruiseID
     join pass_count pc on pc.cruiseID = c.cruiseID
+    left join crew on c.cruiseID = crew.assigned_to
+    left join passenger_books pb on c.cruiseID = pb.cruiseID
+    left join person on crew.personID = person.personID or pb.personID = person.personID
 where c.progress < ms.last_sequence
 group by departing_from;
     
