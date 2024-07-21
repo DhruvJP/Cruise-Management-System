@@ -209,23 +209,39 @@ drop procedure if exists assign_crew;
 delimiter //
 create procedure assign_crew (in ip_cruiseID varchar(50), ip_personID varchar(50))
 sp_main: begin
-    -- Check if cruise is not already in progress
-    if ip_cruiseID in select cruiseID from cruise where progress = '0' then 
-    -- Get the ship type of the cruise
-		if ip_cruiseID in (select cruiseID from 
-    -- Get the first port location of the cruise
-
-    -- Get the current location of the crew member
-
-    -- Check if crew member has a license for the ship type
-
-    -- Check if crew member is at the same location as the cruise's first port
-
-    -- Check if crew member is already assigned to another cruise
-
-    -- Assign crew member to the cruise
-    INSERT INTO crew (assigned_to, personID)
-    VALUES (ip_cruiseID, ip_personID);
+   if not exists (select cruiseID, ip_personID from cruise join ship 
+on cruise.support_ship_name = ship.ship_name 
+and cruise.support_cruiseline = ship.cruiselineID
+join licenses on licenses.license = ship.ship_type where cruise.cruiseID = ip_cruiseID and ip_personID = licenses.personID)
+then
+	if not exists (select cr.personID from crew cr join cruise c on cr.assigned_to = c.cruiseID
+    join route_path r on c.routeID = r.routeID 
+    join leg on r.legID = leg.legID 
+    join ship_port p on leg.arrival = p.portID 
+    join person_occupies po on p.locationID = po.locationID 
+    where c.cruiseID = ip_cruiseID and po.personID = ip_personID)
+    then
+		if not exists (select cruiseID from cruise where progress = '0' and cruiseID = ip_cruiseID)
+        then
+			if not exists (select assigned_to from crew where crew.personID = ip_personID and (assigned_to is null or assigned_to = ''))
+			then leave sp_main; end if; end if; end if; end if;
+if exists (select cruiseID, ip_personID from cruise join ship 
+on cruise.support_ship_name = ship.ship_name 
+and cruise.support_cruiseline = ship.cruiselineID
+join licenses on licenses.license = ship.ship_type where cruise.cruiseID = ip_cruiseID and ip_personID = licenses.personID)
+then 
+	if exists (select cr.personID from crew cr join cruise c on cr.assigned_to = c.cruiseID
+    join route_path r on c.routeID = r.routeID 
+    join leg on r.legID = leg.legID 
+    join ship_port p on leg.departure = p.portID 
+    join person_occupies po on p.locationID = po.locationID 
+    where c.cruiseID = ip_cruiseID and po.personID = ip_personID)
+    then 
+		if exists (select cruiseID from cruise where progress = '0' and cruiseID = ip_cruiseID)
+        then 
+			if exists (select assigned_to from crew where crew.personID = ip_personID and (assigned_to is null or assigned_to = ''))
+			then update crew
+            set crew.assigned_to = ip_cruiseID where crew.personID = ip_personID; end if; end if; end if; end if;
 end //
 delimiter ;
 
