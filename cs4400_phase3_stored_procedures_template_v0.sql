@@ -209,7 +209,7 @@ drop procedure if exists assign_crew;
 delimiter //
 create procedure assign_crew (in ip_cruiseID varchar(50), ip_personID varchar(50))
 sp_main: begin
-   if not exists (select cruiseID, ip_personID from cruise join ship 
+if not exists (select cruiseID, ip_personID from cruise join ship 
 on cruise.support_ship_name = ship.ship_name 
 and cruise.support_cruiseline = ship.cruiselineID
 join licenses on licenses.license = ship.ship_type where cruise.cruiseID = ip_cruiseID and ip_personID = licenses.personID)
@@ -242,6 +242,7 @@ then
 			if exists (select assigned_to from crew where crew.personID = ip_personID and (assigned_to is null or assigned_to = ''))
 			then update crew
             set crew.assigned_to = ip_cruiseID where crew.personID = ip_personID; end if; end if; end if; end if;
+    
 end //
 delimiter ;
 
@@ -268,7 +269,7 @@ drop procedure if exists retire_cruise;
 delimiter //
 create procedure retire_cruise (in ip_cruiseID varchar(50))
 sp_main: begin
-	create temporary table if not exists max_sequences as (
+create temporary table if not exists max_sequences as (
         select max(sequence) as last_sequence, routeID 
         from route_path 
         group by routeID
@@ -307,101 +308,23 @@ if not exists (select cruiseID from cruise
 end //
 delimiter ;
 
--- [13] simulation_cycle()
+-- [13] cruises_at_sea()
 -- -----------------------------------------------------------------------------
-/* This stored procedure executes the next step in the simulation cycle.  The cruise
-with the smallest next time in chronological order must be identified and selected.
-If multiple cruises have the same time, then cruises that are arriving should be
-preferred over cruises that are departing.  Similarly, cruises with the lowest
-identifier in alphabetical order should also be preferred.
-
-If a cruise is sailing and waiting to dock, then the cruise should be allowed
-to dock, passengers allowed to disembark, and the time advanced by one hour until
-the next departure.
-
-If a cruise is docked and waiting to sail, then the passengers should
-be allowed to board, and the time should be advanced to represent when the cruise
-will arrive at its next location based on the leg distance and ship speed.
-
-If an cruise is docked and has reached the end of its route, then the passengers 
-should be allowed to disembark, the crew should be recycled to allow rest, 
-and the cruise itself should be retired from the system. */
--- -----------------------------------------------------------------------------
-drop procedure if exists simulation_cycle;
-delimiter //
-create procedure simulation_cycle ()
-sp_main: begin
-	DECLARE finished INT DEFAULT 0;
-    DECLARE min_next_time DATETIME;
-    DECLARE selected_cruise_id VARCHAR(50);
-    DECLARE cruise_status VARCHAR(20);
-    DECLARE route_completed INT;
-    DECLARE time_now DATETIME;
-    DECLARE cruise_cursor CURSOR FOR
-        SELECT cruiseID, next_time, ship_status, route_completed
-        FROM cruise
-        ORDER BY next_time;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
-    -- Initialize cursor
-    OPEN cruise_cursor;
-    fetch_cruise: LOOP
-        FETCH cruise_cursor INTO selected_cruise_id, min_next_time, cruise_status, route_completed;
-        IF finished THEN
-            LEAVE fetch_cruise;
-        END IF;
-
-        SET time_now = min_next_time;
-
-        IF cruise_status = 'sailing' THEN
-            UPDATE cruise
-            SET ship_status = 'docked',
-                progress = progress + 1,
-                next_time = DATE_ADD(time_now, INTERVAL 1 HOUR)
-            WHERE cruiseID = selected_cruise_id;
-
-            CALL disembark_passengers(selected_cruise_id);
-
-        ELSEIF cruise_status = 'docked' AND route_completed = 0 THEN
-            CALL board_passengers(selected_cruise_id);
-
-            SET @next_arrival_time = DATE_ADD(time_now, INTERVAL (SELECT leg_distance FROM cruise_routes WHERE cruiseID = selected_cruise_id) / (SELECT ship_speed FROM ships WHERE shipID = (SELECT shipID FROM cruise WHERE cruiseID = selected_cruise_id)) HOUR);
-
-            UPDATE cruise
-            SET ship_status = 'sailing',
-                next_time = @next_arrival_time
-            WHERE cruiseID = selected_cruise_id;
-
-        ELSEIF cruise_status = 'docked' AND route_completed = 1 THEN
-            -- Cruise has reached the end of its route
-            CALL disembark_passengers(selected_cruise_id);
-            CALL recycle_crew(selected_cruise_id);
-            DELETE FROM cruise WHERE cruiseID = selected_cruise_id;
-
-        END IF;
-    END LOOP fetch_cruise;
-
-    CLOSE cruise_cursor;
-end //
-delimiter ;
-
--- [14] cruises_at_sea()
--- -----------------------------------------------------------------------------
-/* This view describes where cruises that are currently sailing are located. *
-
+/* This view describes where cruises that are currently sailing are located. */
 -- -----------------------------------------------------------------------------
 create or replace view cruises_at_sea (departing_from, arriving_at, num_cruises,
 	cruise_list, earliest_arrival, latest_arrival, ship_list) as
 select '_', '_', '_', '_', '_', '_', '_';
 
--- [15] cruises_docked()
+-- [14] cruises_docked()
 -- -----------------------------------------------------------------------------
 /* This view describes where cruises that are currently docked are located. */
 -- -----------------------------------------------------------------------------
 create or replace view cruises_docked (departing_from, num_cruises,
-	cruise_list, earliest_arrival, latest_arrival, ship_list) as 
+	cruise_list, earliest_departure, latest_departure, ship_list) as 
 select '_', '_', '_', '_', '_', '_';
 
--- [16] people_at_sea()
+-- [15] people_at_sea()
 -- -----------------------------------------------------------------------------
 /* This view describes where people who are currently at sea are located. */
 -- -----------------------------------------------------------------------------
@@ -410,7 +333,7 @@ create or replace view people_at_sea (departing_from, arriving_at, num_ships,
 	num_passengers, num_people, person_list) as
 select '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_';
 
--- [17] people_docked()
+-- [16] people_docked()
 -- -----------------------------------------------------------------------------
 /* This view describes where people who are currently docked are located. */
 -- -----------------------------------------------------------------------------
@@ -450,8 +373,7 @@ cruise c join ship s on c.support_ship_name = s.ship_name and c.support_cruiseli
     left join person on crew.personID = person.personID or pb.personID = person.personID
 where c.progress < ms.last_sequence
 group by departing_from;
-    
--- [18] route_summary()
+-- [17] route_summary()
 -- -----------------------------------------------------------------------------
 /* This view describes how the routes are being utilized by different cruises. */
 -- -----------------------------------------------------------------------------
@@ -459,10 +381,10 @@ create or replace view route_summary (route, num_legs, leg_sequence, route_lengt
 	num_cruises, cruise_list, port_sequence) as
 select '_', '_', '_', '_', '_', '_', '_';
 
--- [19] alternative_ports()
+-- [18] alternative_ports()
 -- -----------------------------------------------------------------------------
 /* This view displays ports that share the same country. */
 -- -----------------------------------------------------------------------------
 create or replace view alternative_ports (country, num_ports,
 	port_code_list, port_name_list) as
-select '_', '_', '_', '_', '_', '_';
+select '_', '_', '_', '_';
