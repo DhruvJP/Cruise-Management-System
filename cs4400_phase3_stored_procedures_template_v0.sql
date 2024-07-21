@@ -252,16 +252,42 @@ drop procedure if exists retire_cruise;
 delimiter //
 create procedure retire_cruise (in ip_cruiseID varchar(50))
 sp_main: begin
-	if ip_cruiseID in (select cruiseID from cruise where progress = '3' or progress = '0' and ship_status = 'docked') then
-		if ip_cruiseID not in 
-        (select cruiseID 
-        from cruise join ship 
-        on support_ship_name = ship_name 
-        join person_occupies 
-        on ship.locationID = person_occupies.locationID) then 
-		delete from cruise where cruiseID = ip_cruiseID;
-			end if;
-		end if;
+	create temporary table if not exists max_sequences as (
+        select max(sequence) as last_sequence, routeID 
+        from route_path 
+        group by routeID
+    );
+if not exists (select cruiseID from cruise 
+                   join max_sequences on max_sequences.routeID = cruise.routeID
+                   where (progress = max_sequences.last_sequence or progress = '0') 
+                   and ship_status = 'docked' 
+                   and cruiseID = ip_cruiseID) then
+        leave sp_main; 
+    end if;
+    if exists (select cruiseID from cruise 
+               join ship on support_ship_name = ship_name 
+               join person_occupies on ship.locationID = person_occupies.locationID 
+               where cruiseID = ip_cruiseID) 
+       and not exists (select assigned_to from crew where assigned_to = ip_cruiseID)
+       and not exists (select cruiseID from passenger_books where cruiseID = ip_cruiseID) then
+        leave sp_main; 
+    end if;
+    
+    if exists (select cruiseID from cruise 
+               join max_sequences on max_sequences.routeID = cruise.routeID
+               where (progress = max_sequences.last_sequence or progress = '0') 
+               and ship_status = 'docked' 
+               and cruiseID = ip_cruiseID) then
+        if not exists (select cruiseID from cruise 
+                       join ship on support_ship_name = ship_name 
+                       join person_occupies on ship.locationID = person_occupies.locationID 
+                       where cruiseID = ip_cruiseID) 
+           and not exists (select assigned_to from crew where assigned_to = ip_cruiseID)
+           and not exists (select cruiseID from passenger_books where cruiseID = ip_cruiseID) then
+            delete from cruise where cruiseID = ip_cruiseID;
+        end if;
+    end if;
+        drop temporary table if exists max_sequences;
 end //
 delimiter ;
 
