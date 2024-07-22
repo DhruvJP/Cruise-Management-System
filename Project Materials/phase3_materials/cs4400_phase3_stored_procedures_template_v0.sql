@@ -284,7 +284,39 @@ drop procedure if exists assign_crew;
 delimiter //
 create procedure assign_crew (in ip_cruiseID varchar(50), ip_personID varchar(50))
 sp_main: begin
-
+if not exists (select cruiseID, ip_personID from cruise join ship 
+on cruise.support_ship_name = ship.ship_name 
+and cruise.support_cruiseline = ship.cruiselineID
+join licenses on licenses.license = ship.ship_type where cruise.cruiseID = ip_cruiseID and ip_personID = licenses.personID)
+then
+	if not exists (select cr.personID from crew cr join cruise c on cr.assigned_to = c.cruiseID
+    join route_path r on c.routeID = r.routeID 
+    join leg on r.legID = leg.legID 
+    join ship_port p on leg.arrival = p.portID 
+    join person_occupies po on p.locationID = po.locationID 
+    where c.cruiseID = ip_cruiseID and po.personID = ip_personID)
+    then
+		if not exists (select cruiseID from cruise where progress = '0' and cruiseID = ip_cruiseID)
+        then
+			if not exists (select assigned_to from crew where crew.personID = ip_personID and (assigned_to is null or assigned_to = ''))
+			then leave sp_main; end if; end if; end if; end if;
+if exists (select cruiseID, ip_personID from cruise join ship 
+on cruise.support_ship_name = ship.ship_name 
+and cruise.support_cruiseline = ship.cruiselineID
+join licenses on licenses.license = ship.ship_type where cruise.cruiseID = ip_cruiseID and ip_personID = licenses.personID)
+then 
+	if exists (select cr.personID from crew cr join cruise c on cr.assigned_to = c.cruiseID
+    join route_path r on c.routeID = r.routeID 
+    join leg on r.legID = leg.legID 
+    join ship_port p on leg.departure = p.portID 
+    join person_occupies po on p.locationID = po.locationID 
+    where c.cruiseID = ip_cruiseID and po.personID = ip_personID)
+    then 
+		if exists (select cruiseID from cruise where progress = '0' and cruiseID = ip_cruiseID)
+        then 
+			if exists (select assigned_to from crew where crew.personID = ip_personID and (assigned_to is null or assigned_to = ''))
+			then update crew
+            set crew.assigned_to = ip_cruiseID where crew.personID = ip_personID; end if; end if; end if; end if;
 end //
 delimiter ;
 
@@ -311,7 +343,42 @@ drop procedure if exists retire_cruise;
 delimiter //
 create procedure retire_cruise (in ip_cruiseID varchar(50))
 sp_main: begin
-
+create temporary table if not exists max_sequences as (
+        select max(sequence) as last_sequence, routeID 
+        from route_path 
+        group by routeID
+    );
+if not exists (select cruiseID from cruise 
+                   join max_sequences on max_sequences.routeID = cruise.routeID
+                   where (progress = max_sequences.last_sequence or progress = '0') 
+                   and ship_status = 'docked' 
+                   and cruiseID = ip_cruiseID) then
+        leave sp_main; 
+    end if;
+    if exists (select cruiseID from cruise 
+               join ship on support_ship_name = ship_name 
+               join person_occupies on ship.locationID = person_occupies.locationID 
+               where cruiseID = ip_cruiseID) 
+       and not exists (select assigned_to from crew where assigned_to = ip_cruiseID)
+       and not exists (select cruiseID from passenger_books where cruiseID = ip_cruiseID) then
+        leave sp_main; 
+    end if;
+    
+    if exists (select cruiseID from cruise 
+               join max_sequences on max_sequences.routeID = cruise.routeID
+               where (progress = max_sequences.last_sequence or progress = '0') 
+               and ship_status = 'docked' 
+               and cruiseID = ip_cruiseID) then
+        if not exists (select cruiseID from cruise 
+                       join ship on support_ship_name = ship_name 
+                       join person_occupies on ship.locationID = person_occupies.locationID 
+                       where cruiseID = ip_cruiseID) 
+           and not exists (select assigned_to from crew where assigned_to = ip_cruiseID)
+           and not exists (select cruiseID from passenger_books where cruiseID = ip_cruiseID) then
+            delete from cruise where cruiseID = ip_cruiseID;
+        end if;
+    end if;
+        drop temporary table if exists max_sequences;
 end //
 delimiter ;
 
@@ -363,7 +430,40 @@ select '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_';
 -- -----------------------------------------------------------------------------
 create or replace view people_docked (departing_from, ship_port, port_name,
 	city, state, country, num_crew, num_passengers, num_people, person_list) as
-select '_', '_', '_', '_', '_', '_', '_', '_', '_', '_';
+with max_sequences as (select max(sequence) as last_sequence, legID 
+						from route_path group by legID),
+crew_count as (
+		select count(cr.personID) as num_crew, cruiseID from 
+		crew cr join cruise c on cr.assigned_to = c.cruiseID 
+		group by c.cruiseID),
+pass_count as (
+		select count(pass.personID) as num_p, c.cruiseID from 
+		passenger_books pass join cruise c on pass.cruiseID = c.cruiseID 
+		group by c.cruiseID)
+select departure as departing_from,
+po.locationID as ship_port,
+sp.port_name,
+sp.city,
+sp.state,
+sp.country,
+min(num_crew) as num_crew,
+min(num_p) as num_passengers,
+min(num_p) + min(num_crew) as num_people,
+group_concat(distinct person.personID order by cast(substring(person.personid, 2) as unsigned) separator ',') as person_list
+from
+cruise c join ship s on c.support_ship_name = s.ship_name and c.support_cruiseline = s.cruiselineID
+    join route_path r on c.routeID = r.routeID
+    join leg l on r.legID = l.legID
+    join ship_port sp on l.departure = sp.portID
+    join person_occupies po on po.locationID = sp.locationID
+    join max_sequences ms on l.legID = ms.legID
+    join crew_count cc on cc.cruiseID = c.cruiseID
+    join pass_count pc on pc.cruiseID = c.cruiseID
+    left join crew on c.cruiseID = crew.assigned_to
+    left join passenger_books pb on c.cruiseID = pb.cruiseID
+    left join person on crew.personID = person.personID or pb.personID = person.personID
+where c.progress < ms.last_sequence
+group by departing_from;
 
 -- [17] route_summary()
 -- -----------------------------------------------------------------------------
