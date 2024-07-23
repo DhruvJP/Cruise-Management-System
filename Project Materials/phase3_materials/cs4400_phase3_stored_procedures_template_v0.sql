@@ -294,8 +294,91 @@ the ship they are on and not the port of departure). */
 drop procedure if exists cruise_departing;
 delimiter //
 create procedure cruise_departing (in ip_cruiseID varchar(50))
-sp_main: begin
-
+begin
+    declare current_progress integer;
+    declare routeID varchar(50);
+    declare current_legID varchar(50);
+    declare departure_port char(3);
+    declare arrival_port char(3);
+    declare arrival_locationID varchar(50);
+    declare departure_locationID varchar(50);
+    declare ship_name varchar(50);
+    declare cruiselineID varchar(50);
+    declare speed float;
+    declare distance integer;
+    declare travel_time time;
+    declare num_people_on_board integer;
+    declare num_people_expected integer;
+    select progress, routeID, support_ship_name, support_cruiseline
+    into current_progress, routeID, ship_name, cruiselineID
+    from cruise
+    where cruiseID = ip_cruiseID
+    limit 1;
+    select legID into current_legID
+    from route_path
+    where routeID = routeID and sequence = current_progress
+    limit 1;
+    select departure, arrival into departure_port, arrival_port
+    from leg
+    where legID = current_legID
+    limit 1;
+    select locationID into departure_locationID
+    from ship_port
+    where portID = departure_port
+    limit 1;
+    select locationID into arrival_locationID
+    from ship_port
+    where portID = arrival_port
+    limit 1;
+    select speed into speed
+    from ship
+    where cruiselineID = cruiselineID and ship_name = ship_name
+    limit 1;
+    select distance into distance
+    from leg
+    where legID = current_legID
+    limit 1;
+    set travel_time = leg_time(distance, speed);
+    select count(*) into num_people_expected
+    from (
+        select personID from passenger_books where cruiseID = ip_cruiseID
+        union all
+        select personID from crew where assigned_to = ip_cruiseID
+    ) as expected;
+    select count(*) into num_people_on_board
+    from person_occupies
+    where locationID = departure_locationID
+    and personID in (
+        select personID from passenger_books where cruiseID = ip_cruiseID
+        union all
+        select personID from crew where assigned_to = ip_cruiseID
+    );
+    if num_people_on_board <> num_people_expected then
+        update cruise
+        set next_time = addtime(next_time, '00:30:00')
+        where cruiseID = ip_cruiseID;
+    else
+        update cruise
+        set ship_status = 'sailing',
+            progress = progress + 1,
+            next_time = addtime(current_time(), travel_time)
+        where cruiseID = ip_cruiseID;
+        update person_occupies
+        set locationID = (select locationID from ship where cruiselineID = cruiselineID and ship_name = ship_name limit 1)
+        where locationID = departure_locationID
+        and personID in (
+            select personID from passenger_books where cruiseID = ip_cruiseID
+            union all
+            select personID from crew where assigned_to = ip_cruiseID
+        );
+        delete from person_occupies
+        where locationID = departure_locationID
+        and personID in (
+            select personID from passenger_books where cruiseID = ip_cruiseID
+            union all
+            select personID from crew where assigned_to = ip_cruiseID
+        );
+    end if;
 end //
 delimiter ;
 
