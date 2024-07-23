@@ -489,7 +489,27 @@ select '_', '_', '_', '_', '_', '_';
 create or replace view people_at_sea (departing_from, arriving_at, num_ships,
 	ship_list, cruise_list, earliest_arrival, latest_arrival, num_crew,
 	num_passengers, num_people, person_list) as
-select '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_';
+select
+	(leg.departure) as departing_from,
+	(leg.arrival) as arriving_at,
+    count(distinct(cruise.cruiseID)) as num_ships,
+    group_concat(distinct ship.locationID order by ship.locationID separator '') as ship_list,
+    group_concat(distinct cruise.cruiseID order by cruise.cruiseID separator '') as cruise_list,
+    min(distinct(cruise.next_time)) as earliest_arrival,
+    max(distinct(cruise.next_time)) as latest_arrival,
+    count(distinct(crew.personID)) as num_crew,
+    count(distinct(passenger_books.personID)) as num_passengers,
+    count(distinct(person.personID))as num_people,
+    group_concat(distinct(person.personID) order by person.personID asc separator ',') as person_lis
+from cruise join route_path
+on cruise.routeID = route_path.routeID
+join leg on route_path.legID = leg.legID
+join ship on (cruise.support_ship_name = ship.ship_name)
+join crew on cruise.cruiseID = crew.assigned_to
+join passenger_books on cruise.cruiseID = passenger_books.cruiseID
+join person on ((crew.personID = person.personID) or (passenger_books.personID = person.personID))
+where cruise.ship_status like 'sailing' and route_path.sequence = 1
+group by leg.departure, leg.arrival;
 
 -- [16] people_docked()
 -- -----------------------------------------------------------------------------
@@ -538,7 +558,7 @@ group by departing_from;
 -- -----------------------------------------------------------------------------
 create or replace view route_summary (route, num_legs, leg_sequence, route_length,
 	num_cruises, cruise_list, port_sequence) as
-select 
+select
 	cruise.routeID, 
 	count(distinct(route_path.legID)) as num_legs,
 	group_concat(distinct(route_path.legID) order by route_path.sequence asc separator ',') as leg_sequence,
