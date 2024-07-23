@@ -168,35 +168,193 @@ delimiter ;
 
 -- [8] person_boards()
 -- -----------------------------------------------------------------------------
-/* This stored procedure updates the location for people, (crew and passengers), 
-getting on a in-progress cruise at its current port.  The person must be at the same port as the cruise,
-and that person must either have booked that cruise as a passenger or been assigned
-to it as a crew member. The person's location cannot already be assigned to the ship
-they are boarding. After running the procedure, the person will still be assigned to the port location, 
+/* 
+1. This stored procedure updates the location for people, (crew and passengers), 
+2. getting on a in-progress cruise at its current port.
+3. The person must be at the same port as the cruise,
+4. and that person must either have booked that cruise as a passenger
+ or been assigned to it as a crew member.
+5. The person's location cannot already be assigned to the ship
+they are boarding. 
+
+6. After running the procedure, the person will still be assigned to the port location, 
 but they will also be assigned to the ship location. */
 -- -----------------------------------------------------------------------------
 drop procedure if exists person_boards;
 delimiter //
 create procedure person_boards (in ip_personID varchar(50), in ip_cruiseID varchar(50))
 sp_main: begin
+	-- declare inProgress int default 0;
+    -- declare cruisePortLocation varchar(50);
+    -- declare personPortLocation varchar(50);
+	declare shipLocID varchar(50);
+
+
+    -- 1. null check
+    if (ip_personID is null or ip_personID = '') or (ip_cruiseID is null or ip_cruiseID = '')
+    then leave sp_main;
+	end if;
+    /*
+    -- check if person or cruise params are valid.
+    if ((ip_personID) not in (select personID from person)) or ((ip_cruiseID) not in (select cruiseID from cruise))
+    then leave sp_main; end if;
+    
+	-- 2. person must either have booked that cruise as a passenger
+	-- or been assigned to it as a crew member.
+    -- if it fails this conditional then we assume that they
+    -- haven't booked as a passenger or aren't apart of crew
+    -- person must book the cruise specified as they can
+    -- have same personID but book different cruises
+    if (ip_personID, ip_cruiseID) not in
+		(select personID, cruiseID
+        from passenger_books)
+		or (ip_personID, ip_cruiseID)  not in
+			(select personID, assigned_to 
+            from crew)
+	then leave sp_main;
+    end if;
+
+    -- 3. check if its an in progress cruise
+    -- obtain progress from cruise to check conditional.
+    select progress into inProgress
+    from cruise
+    where cruiseID = ip_cruiseID;
+    
+    if (inProgress is null) or (inProgress = '') or 
+    (inProgress = 
+		(select max(sequence) 
+		from cruise join route_path
+        on cruise.routeID = route_path.routeID
+        group by cruise.routeID
+        having cruise.cruiseID = ip_cruiseID))
+	-- leave if max sequence is reached.
+    then leave sp_main;
+    end if;
+    
+    -- 3. get the port/locationID of the cruise
+    -- and check if person's locationID is the same
+    select ship_port.locationID into cruisePortLocation 
+    from cruise join route_path
+    on cruise.routeID = route_path.routeID
+    join leg on route_path.legID = leg.legID
+    join ship_port on ((leg.departure = ship_port.portID) or (leg.arrival = ship_port.portID))
+    where cruise.cruiseID = ip_cruiseID;
+    
+    -- 3A. obtain person location port given
+    -- the location ID parameter
+    select locationID into personPortLocation
+    from person_occupies
+    where person_occupies.personID = ip_personID
+    and person_occupies.locationID like 'port_%';
+    
+    -- 3B. conditional to check if person and
+    -- cruise are at the same port
+	-- otherwise we assume if it fails the condition
+    -- they are at the same port, used '=' to give exact
+    -- depiction/result.
+    if cruisePortLocation != personPortLocation
+    then leave sp_main;
+    end if;
+    
+    
+    -- checking if person isn't already assigned to ship
+	select locationID into personPortLocation
+    from person_occupies
+    where person_occupies.personID = ip_personID
+    and person_occupies.locationID like 'ship_%'; */
+    
+    -- obtains ship.locationID to check if person isn't already assigned
+    -- to the ship
+    select ship.locationID into shipLocID
+    from cruise join ship
+    on cruise.support_cruiseline = ship.cruiselineID
+    where cruise.cruiseID = ip_cruiseID;
+    
+    -- if personPortLocation = shipLocID
+    -- then leave sp_main;
+    -- end if;
+    
+    
+    -- 5. The person's location cannot already
+    -- be assigned to the ship they are boarding. 
+            
+    
+    -- conditional to check if the person is
+    -- already assigned to the ship they are trying to
+    -- board, if thats the case then leave sp_main;
+
+    
+    -- 6. add the person to the ship location
+    /*select ship.locationID into shipLocID
+    from ship join person_occupies
+    on person_occupies.locationID = ship.locationID
+    where person_occupies.personID = ip_personID;
+*/
+
+    -- Add the person to the ship location
+    if exists (select locationID from person_occupies
+    where person_occupies.personID = ip_personID and person_occupies.locationID like 'ship_%')
+    then
+    update person_occupies
+    set locationID = shipLocID
+    where person_occupies.personID = ip_personID
+    and person_occupies.locationID like 'ship_%';
+    
+    else insert into person_occupies (personID, locationID)
+    values (ip_personID, shipLocID);
+	end if;
 
 end //
 delimiter ;
 
+
 -- [9] person_disembarks()
 -- -----------------------------------------------------------------------------
-/* This stored procedure updates the location for people, (crew and passengers), 
-getting off a cruise at its current port.  The person must be on the ship supporting 
-the cruise, and the cruise must be docked at a port. The person should no longer be
-assigned to the ship location, and they will only be assigned to the port location. */
+/* 
+1. This stored procedure updates the location for people, (crew and passengers), 
+getting off a cruise at its current port.
+2. The person must be on the ship supporting the cruise, 
+and the cruise must be docked at a port. 
+3. The person should no longer be assigned to the ship location,
+and they will only be assigned to the port location. */
 -- -----------------------------------------------------------------------------
 drop procedure if exists person_disembarks;
 delimiter //
 create procedure person_disembarks (in ip_personID varchar(50), in ip_cruiseID varchar(50))
 sp_main: begin
+	declare shipLocVal varchar(50);
+
+    -- Check if input parameters are valid
+    if (ip_personID is null or ip_personID = '') or (ip_cruiseID is null or ip_cruiseID = '')
+    then leave sp_main;
+	end if;
+    
+    -- 1. person must be on the ship supporting the cruise
+	/* select ship.locationID into shipLocID
+    from cruise join ship
+    on cruise.support_cruiseline = ship.cruiselineID
+    where cruise.cruiseID = ip_cruiseID; */ 
+    
+
+    select ship.locationID into shipLocVal
+    from cruise join ship
+    on cruise.support_ship_name = ship.ship_name
+    join person_occupies on person_occupies.personID = ip_personID
+    where cruise.cruiseID = ip_cruiseID and cruise.ship_status like 'docked'
+    group by locationID;
+    
+
+	if exists (select locationID from person_occupies
+    where person_occupies.personID = ip_personID and person_occupies.locationID like 'ship_%')
+    then
+    -- Remove the person from the ship location
+    delete from person_occupies
+    where personID = ip_personID and locationID = shipLocVal;
+    end if;
 
 end //
 delimiter ;
+
 
 -- [10] assign_crew()
 -- -----------------------------------------------------------------------------
@@ -373,13 +531,27 @@ cruise c join ship s on c.support_ship_name = s.ship_name and c.support_cruiseli
     left join person on crew.personID = person.personID or pb.personID = person.personID
 where c.progress < ms.last_sequence
 group by departing_from;
+
 -- [17] route_summary()
 -- -----------------------------------------------------------------------------
 /* This view describes how the routes are being utilized by different cruises. */
 -- -----------------------------------------------------------------------------
 create or replace view route_summary (route, num_legs, leg_sequence, route_length,
 	num_cruises, cruise_list, port_sequence) as
-select '_', '_', '_', '_', '_', '_', '_';
+select 
+	cruise.routeID, 
+	count(distinct(route_path.legID)) as num_legs,
+	group_concat(distinct(route_path.legID) order by route_path.sequence asc separator ',') as leg_sequence,
+    round(sum(distinct(leg.distance)), 0) as route_length,
+    count(distinct(cruiseID)) as num_cruises,
+    group_concat(distinct(cruise.cruiseID) order by cruise.cruiseID separator ',') as cruise_list,
+    group_concat(distinct(concat(leg.departure, ' -> ', leg.arrival)) order by route_path.sequence separator ',') as port_sequence
+from cruise join route_path
+on cruise.routeID = route_path.routeID
+join leg on route_path.legID = leg.legID
+join ship_port on ((leg.departure = ship_port.portID) or (leg.arrival = ship_port.portID))
+group by cruise.routeID;
+
 
 -- [18] alternative_ports()
 -- -----------------------------------------------------------------------------
