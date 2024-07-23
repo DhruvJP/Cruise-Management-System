@@ -667,6 +667,7 @@ group by cruise.routeID;
 -- -----------------------------------------------------------------------------
 /* This view displays ports that share the same country. */
 -- -----------------------------------------------------------------------------
-create or replace view alternative_ports (country, num_ports,
-	port_code_list, port_name_list) as
-select '_', '_', '_', '_';
+create or replace view alternative_ports (country, num_ports, port_code_list, port_name_list) as
+select country, count(*) as num_ports, group_concat(portID order by portID separator ', ') as port_code_list, group_concat(port_name order by portID separator ', ') as port_name_list
+from ship_port
+group by country;
