@@ -215,8 +215,66 @@ when the ship docks includes the ship they are on, and the port they are docked 
 drop procedure if exists cruise_arriving;
 delimiter //
 create procedure cruise_arriving (in ip_cruiseID varchar(50))
-sp_main: begin
+begin
+    declare current_progress integer;
+    declare rID varchar(50);
+    declare current_legID varchar(50);
+    declare arrival_port char(3);
+    declare arrival_locationID varchar(50);
+    declare ship_name varchar(50);
+    declare cruiselineID varchar(50);
 
+    select progress, routeID, support_ship_name, support_cruiseline
+    into current_progress, rID, ship_name, cruiselineID
+    from cruise
+    where cruiseID = ip_cruiseID;
+    select legID into current_legID
+    from route_path
+    where routeID = rID and sequence = current_progress;
+    select arrival into arrival_port
+    from leg
+    where legID = current_legID;
+    select locationID into arrival_locationID
+    from ship_port
+    where portID = arrival_port;
+    update cruise
+    set ship_status = 'docked',
+        next_time = addtime(next_time, '08:00:00')
+    where cruiseID = ip_cruiseID;
+    update crew
+    set experience = experience + 1
+    where assigned_to = ip_cruiseID;
+    update passenger p
+    join passenger_books pb on p.personID = pb.personID
+    set p.miles = p.miles + (select distance from leg where legID = current_legID)
+    where pb.cruiseID = ip_cruiseID;
+    delete from person_occupies
+    where locationID = arrival_locationID
+    and personID in (
+        select personID from passenger_books where cruiseID = ip_cruiseID
+        union
+        select personID from crew where assigned_to = ip_cruiseID
+    );
+    insert into person_occupies (personID, locationID)
+    select personID, arrival_locationID
+    from (
+        select personID from passenger_books where cruiseID = ip_cruiseID
+        union
+        select personID from crew where assigned_to = ip_cruiseID
+    ) as people;
+    insert into person_occupies (personID, locationID)
+    select personID, (select locationID from ship where ship_name = ship_name and cruiselineID = cruiselineID)
+    from (
+        select personID from passenger_books where cruiseID = ip_cruiseID
+        union
+        select personID from crew where assigned_to = ip_cruiseID
+    ) as people;
+    update ship
+    set locationID = arrival_locationID
+    where cruiselineID = cruiselineID and ship_name = ship_name;
+    update cruise
+    set progress = current_progress + 1
+    where cruiseID = ip_cruiseID;
 end //
 delimiter ;
 
