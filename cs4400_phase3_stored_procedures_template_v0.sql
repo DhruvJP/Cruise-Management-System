@@ -1,7 +1,6 @@
 -- CS4400: Introduction to Database Systems: Monday, July 1, 2024
 -- Simple Cruise Management System Course Project Stored Procedures [TEMPLATE] (v0)
 -- Views, Functions & Stored Procedures
-
 /* This is a standard preamble for most of our scripts.  The intent is to establish
 a consistent environment for the database behavior. */
 set global transaction isolation level serializable;
@@ -500,7 +499,7 @@ select
     count(distinct(crew.personID)) as num_crew,
     count(distinct(passenger_books.personID)) as num_passengers,
     count(distinct(person.personID))as num_people,
-    group_concat(distinct(person.personID) order by person.personID asc separator ',') as person_lis
+    group_concat(distinct person.personID order by cast(substring(person.personid, 2) as unsigned) separator ',') as person_list  
 from cruise join route_path
 on cruise.routeID = route_path.routeID
 join leg on route_path.legID = leg.legID
@@ -508,7 +507,7 @@ join ship on (cruise.support_ship_name = ship.ship_name)
 join crew on cruise.cruiseID = crew.assigned_to
 join passenger_books on cruise.cruiseID = passenger_books.cruiseID
 join person on ((crew.personID = person.personID) or (passenger_books.personID = person.personID))
-where cruise.ship_status like 'sailing' and route_path.sequence = 1
+where cruise.ship_status like 'sailing' and (route_path.sequence = cruise.progress) 
 group by leg.departure, leg.arrival;
 
 -- [16] people_docked()
@@ -571,7 +570,6 @@ on cruise.routeID = route_path.routeID
 join leg on route_path.legID = leg.legID
 join ship_port on ((leg.departure = ship_port.portID) or (leg.arrival = ship_port.portID))
 group by cruise.routeID;
-
 
 -- [18] alternative_ports()
 -- -----------------------------------------------------------------------------
